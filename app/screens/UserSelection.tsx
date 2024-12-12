@@ -24,6 +24,12 @@ export default function UserSelection() {
         >
           <Text style={styles.buttonText}>Shop Owner</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.userButton]}
+          onPress={() => router.push("/(tabs)/home")}
+        >
+          <Text style={styles.buttonText}>Home</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
