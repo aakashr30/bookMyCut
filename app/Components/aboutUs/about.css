@@ -1,0 +1,82 @@
+.about {
+    padding: 50px;
+    text-align: center;
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+.about-intro {
+    margin-bottom: 30px;
+}
+
+.about-intro h1 {
+    font-size: 2.5rem;
+    color: #28282B;
+    margin-bottom: 15px;
+}
+
+.about-intro p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.about-mission {
+    margin: 40px 0;
+}
+
+.about-mission h2 {
+    font-size: 2rem;
+    color: #28282B;
+    margin-bottom: 10px;
+}
+
+.about-mission p {
+    font-size: 1rem;
+    color: #555;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.about-team {
+    margin-top: 50px;
+}
+
+.about-team h2 {
+    font-size: 2rem;
+    color: #28282B;
+    margin-bottom: 20px;
+}
+
+.team-members {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.team-member {
+    width: 200px;
+    text-align: center;
+}
+
+.team-member img {
+    width: 100%;
+    border-radius: 50%;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 4px 10px;
+    margin-bottom: 10px;
+}
+
+.team-member h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.team-member p {
+    font-size: 0.9rem;
+    color: #777;
+}

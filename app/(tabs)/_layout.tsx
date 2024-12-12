@@ -41,7 +41,7 @@ export default function TabLayout() {
         options={{
           title: "Booking",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="plus.circle" color={color} />
+            <IconSymbol size={30} name="plus.bubble.fill" color={color} /> // Increased size to 30
           ),
         }}
       />
@@ -50,7 +50,7 @@ export default function TabLayout() {
         options={{
           title: "Explore",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="paperplane.fill" color={color} />
+            <IconSymbol size={20} name="chevron.right" color={color} />
           ),
         }}
       />

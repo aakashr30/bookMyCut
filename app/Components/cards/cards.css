@@ -1,0 +1,83 @@
+.cards-container {
+    display: flex;
+    overflow-x: auto;
+    padding: 20px;
+    gap: 20px;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 20px;
+    background-color: black;
+}
+.cards-container::-webkit-scrollbar{
+    display: none;
+}
+.card {
+    display: flex;
+    flex-direction: row;
+    min-width: 300px;
+    height: 250px;
+    /* border-radius: 10px; */
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    scroll-snap-align: start;
+    transition: transform 0.3s ease;
+    
+}
+
+.card:hover {
+    transform: scale(1.05);
+}
+
+.card-image img {
+    width: 150px;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    padding: 10px;
+    background-color: #f7f7f7;
+}
+
+.book-now {
+    padding: 10px 20px;
+    color: white;
+    background-color: #7234fa;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 1rem;
+    margin-top: auto;
+}
+
+.book-now:hover {
+    background-color: #f0e9ea;
+    color: black;
+}
+
+.rating {
+    display: flex;
+    margin: 10px 0;
+  }
+  
+  .star {
+    font-size: 1rem;
+    color: #d3d3d3; /* Gray color for empty stars */
+  }
+  
+  .star.filled {
+    color: #ffcc00; /* Gold color for filled stars */
+  }
+.Headings{
+    color: white;
+   
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+}

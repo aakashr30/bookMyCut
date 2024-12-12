@@ -13,6 +13,7 @@ import { Picker } from "@react-native-picker/picker"; // Correct import for Pick
 import { FontAwesome5 } from "@expo/vector-icons";
 // import Nav from "@/components/NavBar.tsx/Nav";
 import { router } from "expo-router";
+import Nav from "../../components/Nav";
 
 // Salon data type definition
 interface Salon {
@@ -126,6 +127,7 @@ const BookNow = () => {
 
   return (
     <View style={styles.container}>
+      <Nav/>
       {/* <Nav /> */}
       <Pressable
       // onPress={() =>
