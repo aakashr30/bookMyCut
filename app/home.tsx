@@ -1,63 +1,93 @@
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+} from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
 import { HelloWave } from "@/components/HelloWave";
-import { useRouter } from "expo-router";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
-const WelcomeScreen = () => {
-  const router = useRouter();
+const Index = () => {
+  const [fadeAnim] = useState(new Animated.Value(0)); // Initial fade value
+
+  // Fade in animation when the component mounts
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1, // Animate to full opacity
+      duration: 1500, // Duration of animation
+      useNativeDriver: true, // Use native driver for better performance
+    }).start();
+  }, [fadeAnim]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
-        Welcome to BookMyCut <HelloWave />
-      </Text>
-      <Text style={styles.subtitle}>
-        Your personal haircut booking assistant
-      </Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("screens/UserSelection")} // Navigate to tabs
-      >
-        <Text style={styles.buttonText}>Get Started</Text>
-      </TouchableOpacity>
-    </View>
+    <LinearGradient
+      colors={["#000000", "#333333"]} // Black gradient effect
+      style={styles.container}
+    >
+      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+        <Text style={styles.title}>
+          {" "}
+          BookMyCuts <HelloWave />
+        </Text>
+        <Text style={styles.subtitle}>Enjoy the best Booking Experience</Text>
+
+        {/* "Get Started" button at the bottom-right */}
+        <TouchableOpacity
+          onPress={() => router.push("screens/UserSelection")}
+          style={styles.getStartedButton}
+        >
+          <Text style={styles.getStartedText}>Get Started</Text>
+          <FontAwesome5 name="arrow-right" size={20} color="white" />
+        </TouchableOpacity>
+      </Animated.View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000", // Black background
-    alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "center", // Center content vertically
+    padding: 20,
+    position: "relative",
   },
-  animation: {
-    width: 300,
-    height: 300,
-    marginBottom: 20,
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "flex-end", // Align text to the right
   },
   title: {
-    fontSize: 28,
-    color: "#FFD700", // Gold color
+    fontSize: 30,
+    color: "white", // White text color
     fontWeight: "bold",
+    marginBottom: 10,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#FFD700", // Gold color
-    textAlign: "center",
-    marginVertical: 10,
-  },
-  button: {
-    backgroundColor: "#FFD700", // Gold background
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    marginTop: 30,
-  },
-  buttonText: {
-    color: "#000", // Black text
     fontSize: 18,
+    color: "white", // White text color
+    marginBottom: 20,
+  },
+  getStartedButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#333", // dark background for the button
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    flexDirection: "row", // Positioning the text and icon next to each other
+    alignItems: "center",
+  },
+  getStartedText: {
+    color: "white", // White text for the button
+    fontSize: 16,
+    marginRight: 10, // Space between text and icon
     fontWeight: "bold",
   },
 });
 
-export default WelcomeScreen;
+export default Index;

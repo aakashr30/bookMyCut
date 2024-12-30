@@ -28,29 +28,29 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="tabhome"
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="house.fill" color={color} />
+            <IconSymbol size={20} name="house.fill" color={"black"} />
           ),
         }}
       />
       <Tabs.Screen
-        name="booking"
+        name="tabbooking"
         options={{
           title: "Booking",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={30} name="plus.bubble.fill" color={color} /> // Increased size to 30
+            <IconSymbol size={30} name="plus.bubble.fill" color={"black"} /> // Increased size to 30
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="mybooking"
         options={{
-          title: "Explore",
+          title: "My Bookings",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="chevron.right" color={color} />
+            <IconSymbol size={20} name="chevron.right" color={"black"} />
           ),
         }}
       />

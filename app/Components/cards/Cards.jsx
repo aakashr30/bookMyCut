@@ -1,60 +1,139 @@
-import React, { useEffect, useRef } from 'react';
-import './cards.css';
-import { IoLocationSharp } from "react-icons/io5";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+  Text,
+} from "react-native";
 
-function Cards() {
-  const cardData = [
-    { id: 1, image: 'https://i.etsystatic.com/33607814/r/il/293cf9/4298466371/il_570xN.4298466371_hz8p.jpg', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 4 },
-    { id: 2, image: 'https://i.pinimg.com/originals/76/21/bb/7621bb6087ee02d1c51a38663c88e6b0.jpg', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 5 },
-    { id: 3, image: 'https://m.media-amazon.com/images/I/71rDY8xzSQL._AC_UF894,1000_QL80_.jpg', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 3 },
-    { id: 4, image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHjMW9aabnc7IpbExomL574qmSN6XolnQF0sKE9ltYdT4fBW2filVcoCm_P0s9kwqW_CA&usqp=CAU', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 4 },
-    { id: 5, image: 'https://images.fresha.com/locations/location-profile-images/109064/1610649/a5b06e87-c664-45d8-bba1-b965ba42dc8f.jpg?class=width-small', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 2 },
-    { id: 6, image: 'https://images.fresha.com/locations/location-profile-images/109064/649790/41ab50b0-bfac-4bd7-a2af-a3a0cd75fa99.jpg?class=venue-gallery-mobile', openingTime: '9:00 AM', closingTime: '7:00 PM', rating: 5 },
+const { width, height } = Dimensions.get("window");
+
+const Cards = () => {
+  const [selectedGender, setSelectedGender] = useState("male");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSliding, setIsSliding] = useState(false);
+
+  const trendingMaleHaircuts = [
+    require("../../../assets/images/male1.jpg"),
+    require("../../../assets/images/male2.jpg"),
+    require("../../../assets/images/male3.avif"),
+  ];
+  const trendingFemaleHaircuts = [
+    require("../../../assets/images/female1.jpg"),
+    require("../../../assets/images/female2.png"),
+    require("../../../assets/images/female3.jpg"),
   ];
 
-  const scrollContainerRef = useRef(null);
+  const trendingHaircuts =
+    selectedGender === "male" ? trendingMaleHaircuts : trendingFemaleHaircuts;
+
+  const intervalRef = useRef();
 
   useEffect(() => {
-    const scrollInterval = setInterval(() => {
-      if (scrollContainerRef.current) {
-        scrollContainerRef.current.scrollBy({ 
-          left: 200, // Adjust scroll amount as needed
-          behavior: 'smooth' 
-        });
-      }
-    }, 2000);
+    if (isSliding) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex(
+          (prevIndex) => (prevIndex + 1) % trendingHaircuts.length
+        );
+      }, 1000);
+    }
 
-    return () => clearInterval(scrollInterval);
-  }, []);
+    return () => clearInterval(intervalRef.current); // Clear interval on component unmount or when sliding stops
+  }, [isSliding, trendingHaircuts]);
+
+  const handleGenderClick = (gender) => {
+    setSelectedGender(gender);
+    setIsSliding(true); // Start sliding photos for the selected gender
+  };
 
   return (
-    <>
-      <div className="Headings" style={{ backgroundColor: 'black' }}>
-        <h2><IoLocationSharp /> Shops Near By</h2>
-      </div>
-      <div className="cards-container" ref={scrollContainerRef}>
-        {cardData.map((card) => (
-          <div className="card" key={card.id}>
-            <div className="card-image">
-              <img src={card.image} alt="Haircut Shop" />
-            </div>
-            <div className="card-content">
-              <div className="hours">
-                <span className="time">Opens at: <strong>{card.openingTime}</strong></span>
-                <span className="time">Closes at: <strong>{card.closingTime}</strong></span>
-              </div>
-              <div className="rating">
-                {Array.from({ length: 5 }, (_, index) => (
-                  <span key={index} className={index < card.rating ? 'star filled' : 'star'}>★</span>
-                ))}
-              </div>
-              <button className="book-now">Book Now</button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+    <View style={styles.container}>
+      {/* Title Section */}
+      <Text style={styles.title}>Select Gender</Text>
+
+      {/* Top Section with Male and Female Photos */}
+      <View style={styles.topSection}>
+        <TouchableOpacity
+          style={styles.photoContainer}
+          onPress={() => handleGenderClick("male")}
+        >
+          <Image
+            source={require("../../../assets/images/male_photo.jpg")}
+            style={styles.photo}
+          />
+          <Text style={styles.label}>Male</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.photoContainer}
+          onPress={() => handleGenderClick("female")}
+        >
+          <Image
+            source={require("../../../assets/images/female_photo.png")}
+            style={styles.photo}
+          />
+          <Text style={styles.label}>Female</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Bottom Section with Sliding Trending Haircuts */}
+      <View style={styles.trendingContainer}>
+        <Image
+          source={trendingHaircuts[currentIndex]}
+          style={styles.trendingPhoto}
+        />
+      </View>
+    </View>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 20,
+    color: "white",
+    fontFamily: "cursive",
+  },
+  topSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  photoContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  photo: {
+    width: width * 0.4, // 40% of screen width for each photo
+    height: width * 0.4, // Keep the photo square
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "gold", // Gold color for the text
+    fontFamily: "cursive", // Funky font style
+    textAlign: "center",
+  },
+  trendingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  trendingPhoto: {
+    width: width * 0.9, // 90% of screen width
+    height: height * 0.3, // 30% of screen height
+    borderRadius: 10,
+  },
+});
 
 export default Cards;
