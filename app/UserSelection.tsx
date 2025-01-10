@@ -6,12 +6,14 @@ import {
   StyleSheet,
   Animated,
 } from "react-native";
-import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient"; // Import LinearGradient
 import { FontAwesome5 } from "@expo/vector-icons"; // Import FontAwesome icons
+import { useNavigation } from "@react-navigation/native"; // Import useNavigation hook for navigation
+import { router } from "expo-router";
 
 export default function UserSelection() {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial fade value
+  const navigation = useNavigation<any>(); // Initialize navigation with any type
 
   // Fade-in animation when the component mounts
   useEffect(() => {
@@ -35,29 +37,32 @@ export default function UserSelection() {
           {/* User Button with Icon */}
           <TouchableOpacity
             style={[styles.button, styles.userButton]}
-            onPress={() => router.push("/screens/users/UserLogin")}
+            // onPress={() => navigation.navigate("UserLogin")} // Navigate to UserLogin
+            onPress={() => router.push("/logins/UserLogin")}
           >
             <FontAwesome5 name="user" size={24} color="white" />
             <Text style={styles.buttonText}>User</Text>
           </TouchableOpacity>
 
           {/* Shop Owner Button with Icon */}
+          {/* Shop Owner Button */}
           <TouchableOpacity
             style={[styles.button, styles.shopOwnerButton]}
-            onPress={() => router.push("/screens/shopOwners/LoginPage")}
+            onPress={() => router.push("/logins/LoginPage")} // Navigate to TabLayout
           >
             <FontAwesome5 name="store" size={24} color="white" />
             <Text style={styles.buttonText}>Shop Owner</Text>
           </TouchableOpacity>
 
           {/* Home Button with Icon */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.button, styles.homeButton]}
+            // onPress={() => navigation.navigate("Home")} // Navigate to Home
             onPress={() => router.push("/(tabs)/tabhome")}
           >
             <FontAwesome5 name="home" size={24} color="white" />
             <Text style={styles.buttonText}>Home</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </Animated.View>
     </LinearGradient>

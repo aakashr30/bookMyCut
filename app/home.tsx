@@ -37,7 +37,7 @@ const Index = () => {
 
         {/* "Get Started" button at the bottom-right */}
         <TouchableOpacity
-          onPress={() => router.push("screens/UserSelection")}
+          onPress={() => router.push("/UserSelection")}
           style={styles.getStartedButton}
         >
           <Text style={styles.getStartedText}>Get Started</Text>

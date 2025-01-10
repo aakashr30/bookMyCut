@@ -10,24 +10,22 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons"; // Use 'react-native-vector-icons' if not using Expo
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 
 const UserLogin: React.FC = () => {
-  // State variables for form fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Form submission handler
   const handleLogin = () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields.");
       return;
     }
-    // Replace this with real authentication logic
-    Alert.alert("Success", `Welcome back, ${email}!`);
+    // Alert.alert("Success", `Welcome back, ${email}!`);
+          router.push("/(tabs)/tabhome") // Navigate to the Home screen after login
+    
   };
 
-  // Placeholder for Gmail login functionality
   const handleGmailLogin = () => {
     Alert.alert(
       "Login with Gmail",
@@ -43,7 +41,6 @@ const UserLogin: React.FC = () => {
       <View style={styles.loginContainer}>
         <Text style={styles.title}>Login</Text>
 
-        {/* Email Input */}
         <TextInput
           placeholder="Email"
           placeholderTextColor="#aaa"
@@ -52,8 +49,6 @@ const UserLogin: React.FC = () => {
           keyboardType="email-address"
           style={styles.input}
         />
-
-        {/* Password Input */}
         <TextInput
           placeholder="Password"
           placeholderTextColor="#aaa"
@@ -63,12 +58,10 @@ const UserLogin: React.FC = () => {
           style={styles.input}
         />
 
-        {/* Login Button */}
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
 
-        {/* Gmail Login Button */}
         <TouchableOpacity style={styles.gmailButton} onPress={handleGmailLogin}>
           <Ionicons
             name="logo-google"
@@ -79,7 +72,6 @@ const UserLogin: React.FC = () => {
           <Text style={styles.buttonText}>Login with Google</Text>
         </TouchableOpacity>
 
-        {/* Forgot Password and Sign Up Link */}
         <TouchableOpacity
           onPress={() =>
             Alert.alert("Forgot Password", "Password recovery process.")
@@ -87,13 +79,27 @@ const UserLogin: React.FC = () => {
         >
           <Text style={styles.footerText}>Forgot Password?</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           onPress={() =>
             Alert.alert("Sign Up", "Redirect to registration screen.")
           }
         >
           <Text style={styles.footerText}>
-            {/* <Link href="/Screens/user/UserReg">New user?Create Account</Link> */}
+            <TouchableOpacity onPress={() => router.push("/(tabs)/tabhome")}>
+              <Text style={styles.footerText}>Home</Text>
+            </TouchableOpacity>
+          </Text>
+        </TouchableOpacity>
+
+        {/* Register Option */}
+        <TouchableOpacity
+          onPress={() =>
+            router.push("/screens/users/Register") // Change this to the correct path
+          }
+        >
+          <Text style={styles.footerText}>
+            Don't have an account? <Text style={styles.linkText}>Register</Text>
           </Text>
         </TouchableOpacity>
       </View>
@@ -141,7 +147,7 @@ const styles = StyleSheet.create({
   },
   gmailButton: {
     flexDirection: "row",
-    backgroundColor: "#db4437", // Gmail red color
+    backgroundColor: "#db4437",
     borderRadius: 10,
     paddingVertical: 12,
     width: "100%",
@@ -162,5 +168,9 @@ const styles = StyleSheet.create({
     color: "#bbb",
     marginTop: 20,
     fontSize: 14,
+  },
+  linkText: {
+    color: "#6200ea",
+    fontWeight: "bold",
   },
 });

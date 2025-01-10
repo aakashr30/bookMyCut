@@ -181,7 +181,7 @@ const BookNow = () => {
               <Text style={styles.salonDetails}>Gender: {salon.gender}</Text>
               <TouchableOpacity
                 style={styles.bookButton}
-                onPress={() => router.push("screens/BookNow")}
+                onPress={() => router.push("/users/BookNow")}
               >
                 <Text style={styles.bookButtonText}>Book Now</Text>
               </TouchableOpacity>

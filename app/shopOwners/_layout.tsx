@@ -8,7 +8,7 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-export default function TabLayout() {
+export default function TabLayouts() {
   const colorScheme = useColorScheme();
 
   return (
@@ -20,37 +20,39 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
             position: "absolute",
           },
           default: {},
         }),
       }}
     >
+      {/* Home Tab */}
       <Tabs.Screen
-        name="tabhome"
+        name="shopOwnerHome"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="house.fill" color={"white"} />
+          tabBarIcon: () => (
+            <IconSymbol size={20} name="house.fill" color="white" />
           ),
         }}
       />
+      {/* Booking Tab */}
       <Tabs.Screen
-        name="tabbooking"
+        name="shopOwnersbooking"
         options={{
           title: "Booking",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={30} name="plus.bubble.fill" color={"white"} /> // Increased size to 30
+          tabBarIcon: () => (
+            <IconSymbol size={30} name="calendar" color="white" />
           ),
         }}
       />
+      {/* Register Tab */}
       <Tabs.Screen
-        name="mybooking"
+        name="shopOwnerRegister"
         options={{
-          title: "My Bookings",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="chevron.right" color={"white"} />
+          title: "Register",
+          tabBarIcon: () => (
+            <IconSymbol size={24} name="person.crop.circle.badge.plus" color="white" />
           ),
         }}
       />
