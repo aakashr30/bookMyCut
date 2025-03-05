@@ -55,14 +55,14 @@ export default function UserSelection() {
           </TouchableOpacity>
 
           {/* Home Button with Icon */}
-          {/* <TouchableOpacity
-            style={[styles.button, styles.homeButton]}
+          {/*         <TouchableOpacity
+          style={[styles.button, styles.homeButton]}
             // onPress={() => navigation.navigate("Home")} // Navigate to Home
             onPress={() => router.push("/(tabs)/tabhome")}
-          >
-            <FontAwesome5 name="home" size={24} color="white" />
-            <Text style={styles.buttonText}>Home</Text>
-          </TouchableOpacity> */}
+        >
+          <FontAwesome5 name="home" size={24} color="white" />
+            <Text style={styles.buttonText}>Home          </Text>
+        </TouchableOpacity> */}
         </View>
       </Animated.View>
     </LinearGradient>

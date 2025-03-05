@@ -1,0 +1,203 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
+import { useForm, Controller } from "react-hook-form";
+import * as Yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { shopOwnerRegister } from "../api/shopOwnerApi/shopOnwer";
+import Toast from "react-native-toast-message";
+
+// Define form data type
+interface FormData {
+  firstName: string;
+  lastName: string;
+  city: string;
+  mobileNo: string;
+  email: string;
+  password: string;
+}
+
+// Validation schema
+const validationSchema = Yup.object().shape({
+  firstName: Yup.string().required("First Name is required"),
+  lastName: Yup.string().required("Last Name is required"),
+  city: Yup.string().required("City is required"),
+  mobileNo: Yup.string()
+    .matches(/^[0-9]{10}$/, "Mobile number must be 10 digits")
+    .required("Mobile number is required"),
+  email: Yup.string()
+    .email("Invalid email format")
+    .required("Email is required"),
+  password: Yup.string()
+    .min(6, "Password must be at least 6 characters")
+    .required("Password is required"),
+});
+
+const ShopOwnerForm = () => {
+  const [submittedData, setSubmittedData] = useState<FormData | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      city: "",
+      mobileNo: "",
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setSubmittedData(data);
+    console.log("Form Submitted:", data);
+    try {
+      const response = await shopOwnerRegister(data);
+      if (response) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "Registration successful",
+        });
+        reset();
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Something went wrong",
+      });
+    }
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Text style={styles.headerText}>Please Fill Your Details</Text>
+        </View>
+        {(
+          [
+            {
+              name: "firstName",
+              label: "First Name",
+              placeholder: "Enter First Name",
+            },
+            {
+              name: "lastName",
+              label: "Last Name",
+              placeholder: "Enter Last Name",
+            },
+            { name: "city", label: "City", placeholder: "Enter City" },
+            {
+              name: "mobileNo",
+              label: "Mobile Number",
+              placeholder: "Enter Mobile Number",
+              keyboardType: "phone-pad",
+            },
+            {
+              name: "email",
+              label: "Email",
+              placeholder: "Enter Email",
+              keyboardType: "email-address",
+            },
+            {
+              name: "password",
+              label: "Password",
+              placeholder: "Enter Password",
+              secureTextEntry: true,
+            },
+          ] as const
+        ).map((field) => (
+          <View key={field.name}>
+            <Text style={styles.label}>{field.label}</Text>
+            <Controller
+              control={control}
+              name={field.name}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  placeholder={field.placeholder}
+                  placeholderTextColor="#999"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  // keyboardType={field.keyboardType || "default"}
+                  // secureTextEntry={field.secureTextEntry || false}
+                />
+              )}
+            />
+            {errors[field.name] && (
+              <Text style={styles.error}>{errors[field.name]?.message}</Text>
+            )}
+          </View>
+        ))}
+        <TouchableOpacity
+          style={styles.submitButton}
+          onPress={handleSubmit(onSubmit)}
+        >
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+    paddingHorizontal: 20,
+    paddingTop: 50,
+  },
+  header: { alignItems: "center", marginBottom: 20 },
+  headerText: {
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
+  label: { color: "#fff", fontSize: 16, fontWeight: "bold", marginBottom: 5 },
+  input: {
+    backgroundColor: "#222",
+    color: "#fff",
+    padding: 14,
+    borderRadius: 10,
+    fontSize: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#444",
+  },
+  error: { color: "#ff4d4d", fontSize: 14, marginBottom: 10 },
+  submitButton: {
+    backgroundColor: "#28a745",
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  submitButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+  },
+});
+
+export default ShopOwnerForm;

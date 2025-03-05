@@ -1,283 +1,366 @@
-// import React from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   FlatList,
-//   TouchableOpacity,
-//   GestureResponderEvent,
-// } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import {
+  fetchViewAllShop,
+  fetchAddShop,
+  fetchAddBarbers,
+  fetchaddServices,
+} from "../api/shopOwnerApi/shopOnwer";
+import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for delete icon
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AuthContext } from "../context/AuthContext";
 
-// interface ShopOwnerCardProps {
-//   name: string;
-//   businessName: string;
-//   location: string;
-//   onPress: (event: GestureResponderEvent) => void;
-// }
+interface Barber {
+  name: string;
+  city: string;
+}
 
-// const ShopOwnerCard: React.FC<ShopOwnerCardProps> = ({
-//   name,
-//   businessName,
-//   location,
-//   onPress,
-// }) => {
-//   return (
-//     <TouchableOpacity style={styles.card} onPress={onPress}>
-//       <Text style={styles.cardTitle}>{name}</Text>
-//       <Text style={styles.cardSubtitle}>{businessName}</Text>
-//       <Text style={styles.cardLocation}>{location}</Text>
-//     </TouchableOpacity>
-//   );
-// };
+interface Service {
+  service: string;
+  price: string;
+}
 
-// interface ShopOwner {
-//   id: string;
-//   name: string;
-//   businessName: string;
-//   location: string;
-// }
+interface Shop {
+  name: string;
+  address: string;
+}
 
-// const ShopOwnerScreen: React.FC = () => {
-//   const shopOwners: ShopOwner[] = [
-//     { id: "1", name: "John Doe", businessName: "Doe's Barbershop", location: "New York, NY" },
-//     { id: "2", name: "Jane Smith", businessName: "Jane's Salon", location: "Los Angeles, CA" },
-//     { id: "3", name: "Michael Brown", businessName: "Michael's Cuts", location: "Chicago, IL" },
-//     { id: "4", name: "Emily Davis", businessName: "Emily's Beauty Studio", location: "Houston, TX" },
-//   ];
+const RegisterScreen: React.FC = () => {
+  const [barbers, setBarbers] = useState<Barber[]>([{ name: "", city: "" }]);
+  const [services, setServices] = useState<Service[]>([
+    { service: "", price: "" },
+  ]);
+  const [timings, setTimings] = useState<string[]>([""]);
+  const [shop, setShop] = useState<Shop>({ name: "", address: "" });
+  const { isLoading, userToken, userType } = useContext(AuthContext);
 
-//   const handleCardPress = (name: string): void => {
-//     alert(`You selected ${name}'s shop!`);
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.header}>Shop Owners</Text>
-//       <FlatList
-//         data={shopOwners}
-//         keyExtractor={(item) => item.id}
-//         renderItem={({ item }) => (
-//           <ShopOwnerCard
-//             name={item.name}
-//             businessName={item.businessName}
-//             location={item.location}
-//             onPress={() => handleCardPress(item.name)}
-//           />
-//         )}
-//         contentContainerStyle={styles.list}
-//       />
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#f5f5f5",
-//     paddingHorizontal: 20,
-//     paddingTop: 40,
-//   },
-//   header: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//     textAlign: "center",
-//     marginBottom: 20,
-//   },
-//   list: {
-//     paddingBottom: 20,
-//   },
-//   card: {
-//     backgroundColor: "#fff",
-//     borderRadius: 10,
-//     padding: 20,
-//     marginBottom: 15,
-//     shadowColor: "#000",
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//     shadowOffset: { width: 0, height: 2 },
-//     elevation: 3, // For Android shadow
-//   },
-//   cardTitle: {
-//     fontSize: 18,
-//     fontWeight: "bold",
-//     marginBottom: 5,
-//   },
-//   cardSubtitle: {
-//     fontSize: 16,
-//     color: "#666",
-//     marginBottom: 10,
-//   },
-//   cardLocation: {
-//     fontSize: 14,
-//     color: "#888",
-//   },
-// });
-
-// export default ShopOwnerScreen;
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-
-const RegisterScreen = () => {
-  const [shopName, setShopName] = useState('');
-  const [barberName, setBarberName] = useState('');
-  const [timings, setTimings] = useState<string[]>(['']);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [address, setAddress] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('');
-  const [otherCategory, setOtherCategory] = useState('');
-
-  const handleAddTiming = () => {
-    setTimings([...timings, '']);
-  };
-
-  const handleTimingChange = (text: string, index: number) => {
-    const updatedTimings = [...timings];
-    updatedTimings[index] = text;
-    setTimings(updatedTimings);
-  };
-
-  const handleSubmit = () => {
-    const formData = {
-      shopName,
-      barberName,
-      timings,
-      phoneNumber,
-      address,
-      price,
-      category: category === 'Other' ? otherCategory : category,
+  useEffect(() => {
+    const viewAllShop = async () => {
+      const data = await fetchViewAllShop();
+      if (data && data.data.length > 0) {
+        const firstShop = data.data[0]; // Assuming we fetch the first shop
+        setShop({
+          name: firstShop.ShopName || "",
+          address: firstShop.ShopAddress || "",
+        });
+        setTimings(firstShop.timings || [""]);
+      }
     };
-    console.log('Form Data:', formData);
-    // Add API call or further processing here
+    viewAllShop();
+  }, []);
+
+  const handleShopChange = (text: string, field: keyof Shop) => {
+    setShop({ ...shop, [field]: text });
+  };
+
+  const handleBarberChange = (
+    text: string,
+    index: number,
+    field: keyof Barber
+  ) => {
+    const updatedBarbers = [...barbers];
+    updatedBarbers[index][field] = text;
+    setBarbers(updatedBarbers);
+  };
+
+  const handleServiceChange = (
+    text: string,
+    index: number,
+    field: keyof Service
+  ) => {
+    const updatedServices = [...services];
+    updatedServices[index][field] = text;
+    setServices(updatedServices);
+  };
+
+  // const handleAddBarber = async () => {
+  //   try {
+  //     // Retrieve the auth token from AsyncStorage
+  //     const token = userToken;
+  //     console.log(token, "tokentoken");
+
+  //     // Check if the token exists
+  //     if (!token) {
+  //       Alert.alert("Error", "Authentication token is missing.");
+  //       return;
+  //     }
+
+  //     // If token exists, prepare new barber data
+  //     const newBarber = { name: "New Barber", city: "Unknown City" };
+
+  //     // Update UI immediately
+  //     setBarbers((prevBarbers) => [...prevBarbers, newBarber]);
+
+  //     // Call API to add barber
+  //     const response = await fetchAddBarbers(newBarber, userToken);
+
+  //     // Handle the response
+  //     if (response?.success) {
+  //       Alert.alert("Success", "Barber added successfully!");
+  //     } else {
+  //       console.error("Failed to add barber:", response?.message);
+  //       Alert.alert("Error", response?.message || "Failed to add barber.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error adding barber:", error);
+  //     Alert.alert("Error", "Something went wrong while adding barber.");
+  //   }
+  // };
+  const handleAddBarber = async () => {
+    try {
+      // Retrieve the auth token from AsyncStorage
+      const token = userToken;
+      console.log(token, "tokentoken");
+
+      // Check if the token exists
+      if (!token) {
+        Alert.alert("Error", "Authentication token is missing.");
+        return;
+      }
+
+      // Loop through the barbers and prepare FormData for each barber
+      for (let i = 0; i < barbers.length; i++) {
+        const barber = barbers[i];
+        const formData = new FormData();
+
+        // Append barber data to FormData
+        formData.append("name", barber.name);
+        formData.append("city", barber.city);
+
+        // Assuming the API accepts FormData for adding barbers
+        const response = await fetchAddBarbers(formData, userToken);
+
+        // Handle the response
+        if (response?.success) {
+          Alert.alert("Success", "Barber added successfully!");
+        } else {
+          console.error("Failed to add barber:", response?.message);
+          Alert.alert("Error", response?.message || "Failed to add barber.");
+        }
+      }
+    } catch (error) {
+      console.error("Error adding barber:", error);
+      Alert.alert("Error", "Something went wrong while adding barber.");
+    }
+  };
+
+  const handleAddService = async () => {
+    try {
+      // Retrieve the auth token from AsyncStorage (or use userToken if it's already available)
+      const token = userToken;
+      console.log(token, "tokentoken");
+
+      // Check if the token exists
+      if (!token) {
+        Alert.alert("Error", "Authentication token is missing.");
+        return;
+      }
+
+      // Loop through the services and prepare each service for API call
+      for (let i = 0; i < services.length; i++) {
+        const service = services[i];
+
+        // Prepare service data
+        const serviceData = {
+          name: service.service,
+          price: service.price,
+        };
+
+        // Call the API to add service
+        const response = await fetchaddServices(serviceData, token);
+
+        // Handle the response
+        if (response?.success) {
+          Alert.alert("Success", "Service added successfully!");
+        } else {
+          console.error("Failed to add service:", response?.message);
+          Alert.alert("Error", response?.message || "Failed to add service.");
+        }
+      }
+    } catch (error) {
+      console.error("Error adding service:", error);
+      Alert.alert("Error", "Something went wrong while adding the service.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    const requestData = { shop, barbers, services, timings };
+
+    try {
+      const response = await fetchAddShop(requestData);
+      if (response.success) {
+        Alert.alert("Success", "Shop registered successfully!");
+
+        // Reset Form
+        setShop({ name: "", address: "" });
+        setBarbers([{ name: "", city: "" }]);
+        setServices([{ service: "", price: "" }]);
+        setTimings([""]);
+      } else {
+        Alert.alert("Error", response.message || "Failed to register shop.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    }
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.label}>Shop Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter shop name"
-        placeholderTextColor="#999"
-        value={shopName}
-        onChangeText={setShopName}
-      />
-
-      <Text style={styles.label}>Barber Name</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter barber name"
-        placeholderTextColor="#999"
-        value={barberName}
-        onChangeText={setBarberName}
-      />
-
-      <Text style={styles.label}>Timings</Text>
-      {timings.map((timing, index) => (
-        <TextInput
-          key={index}
-          style={styles.input}
-          placeholder={`Enter timing ${index + 1}`}
-          placeholderTextColor="#999"
-          value={timing}
-          onChangeText={(text) => handleTimingChange(text, index)}
-        />
-      ))}
-      <TouchableOpacity style={styles.addButton} onPress={handleAddTiming}>
-        <Text style={styles.addButtonText}>+ Add Timing</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.label}>Phone Number</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter phone number"
-        placeholderTextColor="#999"
-        keyboardType="phone-pad"
-        value={phoneNumber}
-        onChangeText={setPhoneNumber}
-      />
-
-      <Text style={styles.label}>Address</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter address"
-        placeholderTextColor="#999"
-        value={address}
-        onChangeText={setAddress}
-      />
-
-      <Text style={styles.label}>Price</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter price"
-        placeholderTextColor="#999"
-        keyboardType="numeric"
-        value={price}
-        onChangeText={setPrice}
-      />
-
-      <Text style={styles.label}>Category</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Choose category (Haircut, Shaving, Trimming, Other)"
-        placeholderTextColor="#999"
-        value={category}
-        onChangeText={setCategory}
-      />
-      {category === 'Other' && (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Register Shop</Text>
+      </View>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.sectionHeader}>Shop Details</Text>
         <TextInput
           style={styles.input}
-          placeholder="Specify other category"
+          placeholder="Shop Name"
           placeholderTextColor="#999"
-          value={otherCategory}
-          onChangeText={setOtherCategory}
+          value={shop.name}
+          onChangeText={(text) => handleShopChange(text, "name")}
         />
-      )}
+        <TextInput
+          style={styles.input}
+          placeholder="Shop Address"
+          placeholderTextColor="#999"
+          value={shop.address}
+          onChangeText={(text) => handleShopChange(text, "address")}
+        />
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
+        <Text style={styles.sectionHeader}>Timings</Text>
+        {timings.map((time, index) => (
+          <TextInput
+            key={index}
+            style={styles.input}
+            placeholder="Shop Timing"
+            placeholderTextColor="#999"
+            value={time}
+            onChangeText={(text) => {
+              const updatedTimings = [...timings];
+              updatedTimings[index] = text;
+              setTimings(updatedTimings);
+            }}
+          />
+        ))}
+
+        <Text style={styles.sectionHeader}>Barbers</Text>
+        {barbers.map((barber, index) => (
+          <View key={index} style={styles.row}>
+            <TextInput
+              style={styles.input}
+              placeholder="Barber Name"
+              placeholderTextColor="#999"
+              value={barber.name}
+              onChangeText={(text) => handleBarberChange(text, index, "name")}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Barber City"
+              placeholderTextColor="#999"
+              value={barber.city}
+              onChangeText={(text) => handleBarberChange(text, index, "city")}
+            />
+            <TouchableOpacity
+              style={styles.deleteButton}
+              // Add delete functionality if needed
+            >
+              <Ionicons name="trash" size={24} color="#ff0000" />
+            </TouchableOpacity>
+          </View>
+        ))}
+        <TouchableOpacity style={styles.addButton} onPress={handleAddBarber}>
+          <Text style={styles.addButtonText}>+ Add Barber</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.sectionHeader}>Services</Text>
+        {services.map((service, index) => (
+          <View key={index} style={styles.row}>
+            <TextInput
+              style={styles.input}
+              placeholder="Service Name"
+              placeholderTextColor="#999"
+              value={service.service}
+              onChangeText={(text) =>
+                handleServiceChange(text, index, "service")
+              }
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Price"
+              placeholderTextColor="#999"
+              value={service.price}
+              keyboardType="numeric"
+              onChangeText={(text) => handleServiceChange(text, index, "price")}
+            />
+          </View>
+        ))}
+        <TouchableOpacity style={styles.addButton} onPress={handleAddService}>
+          <Text style={styles.addButtonText}>+ Add Service</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000', // Black theme
-    padding: 16,
+  container: { flex: 1, backgroundColor: "#000" },
+  header: {
+    backgroundColor: "#222",
+    padding: 15,
+    alignItems: "center",
+    paddingTop: 50,
   },
-  label: {
-    color: '#fff', // White text
+  headerText: { color: "#fff", fontSize: 20, fontWeight: "bold" },
+  scrollContainer: { padding: 16 },
+  sectionHeader: {
+    color: "#fff",
+    fontSize: 18,
     marginBottom: 8,
-    fontSize: 16,
+    marginTop: 16,
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#333', // Darker background for inputs
-    color: '#fff', // White text
+    flex: 1,
+    backgroundColor: "#333",
+    color: "#fff",
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 8,
+    marginRight: 8,
   },
   addButton: {
-    backgroundColor: '#555',
+    backgroundColor: "#555",
     padding: 10,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
+  addButtonText: { color: "#fff", fontSize: 14 },
   submitButton: {
-    backgroundColor: '#fff',
-    padding: 16,
+    backgroundColor: "#4CAF50",
+    padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
-  submitButtonText: {
-    color: '#000',
-    fontWeight: 'bold',
-    fontSize: 16,
+  submitButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  deleteButton: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

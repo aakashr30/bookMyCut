@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -11,8 +11,10 @@ import {
   TextInput,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import { AuthContext } from "@/app/context/AuthContext";
 
 const Navbar = () => {
+  const { logout } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(300)).current;
 
@@ -26,7 +28,7 @@ const Navbar = () => {
         const response = await new Promise((resolve) =>
           setTimeout(() => resolve({ data: { name: "John Doe" } }), 1000)
         );
-        setUserName(response.data.name);
+        // setUserName(response.data.name);
       } catch (error) {
         console.error("Error fetching user name:", error);
       }
@@ -105,11 +107,11 @@ const Navbar = () => {
                 {/* Modal Items */}
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}> Offers</Text>
+                  {/* onPress={() => router.push("/logins/UserLoginRegisterForm")} */}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}>About</Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}>Accounts</Text>
                 </TouchableOpacity>
@@ -122,7 +124,7 @@ const Navbar = () => {
 
                 {/* Logout at the Bottom */}
                 <View style={styles.logoutContainer}>
-                  <TouchableOpacity style={styles.modalItem}>
+                  <TouchableOpacity style={styles.modalItem} onPress={logout}>
                     <Text style={styles.modalItemText}>Logout</Text>
                   </TouchableOpacity>
                 </View>

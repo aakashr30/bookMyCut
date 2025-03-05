@@ -1,9 +1,9 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons"; // ✅ Use Ionicons (Expo-compatible)
 
 import { HapticTab } from "@/components/HapticTab";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -20,37 +20,41 @@ export default function TabLayout() {
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
           ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: "absolute",
+            position: "absolute", // ✅ Transparent effect for iOS
           },
           default: {},
         }),
       }}
     >
+      {/* Home Tab */}
       <Tabs.Screen
         name="tabhome"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="house.fill" color={"white"} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
           ),
         }}
       />
+
+      {/* Booking Tab */}
       <Tabs.Screen
         name="tabbooking"
         options={{
           title: "Booking",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={30} name="plus.bubble.fill" color={"white"} /> // Increased size to 30
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="add-circle" size={size + 5} color={color} />
           ),
         }}
       />
+
+      {/* My Bookings Tab */}
       <Tabs.Screen
         name="mybooking"
         options={{
           title: "My Bookings",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={20} name="chevron.right" color={"white"} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="book" size={size} color={color} />
           ),
         }}
       />
