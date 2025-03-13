@@ -2,14 +2,15 @@ import React, { createContext, useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { BASE_URL } from "../../config";
-import { StackActions } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native"; // Import hook here
+
 export const AuthContext = createContext();
-import { useNavigation } from "@react-navigation/native";
 
 export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userToken, setUserToken] = useState(null);
   const [userType, setUserType] = useState(null); // Distinguish between 'user' and 'shopowner'
+  const navigation = useNavigation(); // Initialize here, within the component
 
   // User or Shop Owner Login
   const login = async (email, password, type = "user") => {
@@ -30,7 +31,7 @@ export const AuthProvider = ({ children }) => {
         await AsyncStorage.setItem("userToken", token);
         await AsyncStorage.setItem("userType", type);
       } else {
-        alert("Invaliddddddd response from server. Please try again.");
+        alert("Invalid response from server. Please try again.");
       }
     } catch (error) {
       console.error("Login Error:", error?.response?.data || error.message);
@@ -41,47 +42,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout for both user and shopowner
-  // const logout = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     await AsyncStorage.removeItem("userToken");
-  //     await AsyncStorage.removeItem("userType");
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem("userType");
 
-  //     setUserToken(null);
-  //     setUserType(null);
-  //   } catch (error) {
-  //     console.error("Logout Error:", error.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  // const logout = async () => {
-  //   setIsLoading(true);
-  //   try {
-  //     await AsyncStorage.removeItem("userToken");
-  //     await AsyncStorage.removeItem("userType");
+      setUserToken(null);
+      setUserType(null);
 
-  //     setUserToken(null);
-  //     setUserType(null);
-
-  //     // navigation.reset({
-  //     //   index: 0,
-  //     //   routes: [{ name: "UserLogin" }], // Replace with your login screen name
-  //     // });
-  //     navigation.replace("UserLogin");
-  //   } catch (error) {
-  //     console.error("Logout Error:", error.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-  const logout = () => {
-    // Clear user session data here
-    // navigation.dispatch(StackActions.popToTop());
-    const navigation = useNavigation(); // Get navigation from the hook
-    // Clear user session data here
-    navigation.navigate("UserSelection");
+      // Navigate to UserSelection screen
+      navigation.navigate("UserSelection");
+    } catch (error) {
+      console.error("Logout Error:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   // Check if user is already logged in on app launch
   const isLoggedIn = async () => {
     setIsLoading(true);

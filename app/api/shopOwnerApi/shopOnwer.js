@@ -111,7 +111,7 @@ export const fetchaddServices = async (service, token) => {
 
 export const fetchViewAllBarbers = async () => {
   try {
-    const response = await axios.post(
+    const response = await axios.get(
       "https://bookmycuts.onrender.com/api/shop/viewAllBarbers"
     );
     return response.data;
@@ -119,6 +119,21 @@ export const fetchViewAllBarbers = async () => {
     Toast.show({
       type: "error",
       type1: "Error fetch getAShop",
+      text2: "something went wrong",
+    });
+  }
+};
+
+export const fetchViewAllServices = async () => {
+  try {
+    const response = await axios.get(
+      "https://bookmycuts.onrender.com/api/shop/viewAllServices"
+    );
+    return response.data;
+  } catch (error) {
+    Toast.show({
+      type: "error",
+      type1: "Error fetch getAservice",
       text2: "something went wrong",
     });
   }

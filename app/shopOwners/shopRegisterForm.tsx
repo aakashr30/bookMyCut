@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,9 @@ import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { shopOwnerRegister } from "../api/shopOwnerApi/shopOnwer";
 import Toast from "react-native-toast-message";
+import { AuthContext } from "../context/AuthContext";
+import { jwtDecode } from "jwt-decode";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define form data type
 interface FormData {
@@ -43,7 +46,8 @@ const validationSchema = Yup.object().shape({
 
 const ShopOwnerForm = () => {
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
-
+  const [shoperId, setShoperId] = useState("");
+  const { token } = useContext(AuthContext);
   const {
     control,
     handleSubmit,
@@ -58,6 +62,7 @@ const ShopOwnerForm = () => {
       mobileNo: "",
       email: "",
       password: "",
+      shoperId: "",
     },
   });
 
@@ -82,7 +87,26 @@ const ShopOwnerForm = () => {
       });
     }
   };
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const userToken = await AsyncStorage.getItem("userToken");
+        console.log("Retrieved Token:", userToken);
 
+        if (userToken && typeof userToken === "string") {
+          const decoded = jwtDecode(userToken);
+          console.log("Decoded Token:", decoded);
+          setShoperId(decoded.id);
+        } else {
+          console.warn("No valid token found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    };
+
+    fetchToken(); // Call the async function
+  }, []);
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

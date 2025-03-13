@@ -1,166 +1,4 @@
-// import React from "react";
-// import { FlatList, View, Text, StyleSheet, TouchableOpacity } from "react-native";
-
-// const bookings = [
-//   {
-//     id: "1",
-//     userName: "John Doe",
-//     timing: "10:00 AM - 11:00 AM",
-//     location: "Downtown Salon",
-//     paid: true,
-//   },
-//   {
-//     id: "2",
-//     userName: "Jane Smith",
-//     timing: "11:30 AM - 12:30 PM",
-//     location: "City Center",
-//     paid: false,
-//   },
-//   {
-//     id: "3",
-//     userName: "Bob Johnson",
-//     timing: "1:00 PM - 2:00 PM",
-//     location: "Uptown Salon",
-//     paid: true,
-//   },
-// ];
-
-// export default function ShopOwnerHome() {
-//   const handleAccept = (id: string) => {
-//     console.log(`Accepted booking with ID: ${id}`);
-//     // Add logic to update the booking status
-//   };
-
-//   const handleDecline = (id: string) => {
-//     console.log(`Declined booking with ID: ${id}`);
-//     // Add logic to update the booking status
-//   };
-
-//   const renderBooking = ({ item }: { item: typeof bookings[0] }) => {
-//     return (
-//       <View style={styles.card}>
-//         <View style={styles.row}>
-//           <Text style={styles.label}>Name:</Text>
-//           <Text style={styles.value}>{item.userName}</Text>
-//         </View>
-//         <View style={styles.row}>
-//           <Text style={styles.label}>Timing:</Text>
-//           <Text style={styles.value}>{item.timing}</Text>
-//         </View>
-//         <View style={styles.row}>
-//           <Text style={styles.label}>Location:</Text>
-//           <Text style={styles.value}>{item.location}</Text>
-//         </View>
-//         <View style={styles.row}>
-//           <Text style={styles.label}>Payment:</Text>
-//           <Text
-//             style={[styles.paymentStatus, { color: item.paid ? "green" : "red" }]}
-//           >
-//             {item.paid ? "Paid" : "Not Paid"}
-//           </Text>
-//         </View>
-//         <View style={styles.actions}>
-//           <TouchableOpacity
-//             style={[styles.button, styles.acceptButton]}
-//             onPress={() => handleAccept(item.id)}
-//           >
-//             <Text style={styles.buttonText}>Accept</Text>
-//           </TouchableOpacity>
-//           <TouchableOpacity
-//             style={[styles.button, styles.declineButton]}
-//             onPress={() => handleDecline(item.id)}
-//           >
-//             <Text style={styles.buttonText}>Decline</Text>
-//           </TouchableOpacity>
-//         </View>
-//       </View>
-//     );
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>View Bookings</Text>
-//       <FlatList
-//         data={bookings}
-//         keyExtractor={(item) => item.id}
-//         renderItem={renderBooking}
-//         contentContainerStyle={styles.listContainer}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 10,
-//     flex: 1, // To ensure the container takes full height
-//     backgroundColor:"whitesmoke"
-//   },
-//   title: {
-//     marginTop:40,
-//     fontSize: 24,
-//     fontWeight: "bold",
-//     color: "black",
-//     marginBottom: 20, // Add margin for spacing between title and list
-//     textAlign: "center", // Center the title
-//   },
-//   listContainer: {
-//     paddingBottom: 10, // Ensure there's padding at the bottom of the list
-//   },
-//   card: {
-//     backgroundColor: "#fff",
-//     padding: 15,
-//     borderRadius: 8,
-//     marginBottom: 10,
-//     shadowColor: "#000",
-//     shadowOffset: { width: 0, height: 2 },
-//     shadowOpacity: 0.1,
-//     shadowRadius: 4,
-//     elevation: 2,
-//   },
-//   row: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginBottom: 8,
-//   },
-//   label: {
-//     fontWeight: "bold",
-//     fontSize: 16,
-//     color: "#333",
-//   },
-//   value: {
-//     fontSize: 16,
-//     color: "#555",
-//   },
-//   paymentStatus: {
-//     fontWeight: "bold",
-//     fontSize: 16,
-//   },
-//   actions: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     marginTop: 10,
-//   },
-//   button: {
-//     padding: 10,
-//     borderRadius: 5,
-//     flex: 1,
-//     marginHorizontal: 5,
-//     alignItems: "center",
-//   },
-//   acceptButton: {
-//     backgroundColor: "green",
-//   },
-//   declineButton: {
-//     backgroundColor: "red",
-//   },
-//   buttonText: {
-//     color: "white",
-//     fontWeight: "bold",
-//     fontSize: 14,
-//   },
-// });
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useRef } from "react";
 import {
   FlatList,
   View,
@@ -171,30 +9,41 @@ import {
   Pressable,
   Dimensions,
   Image,
+  Animated,
 } from "react-native";
 import { AuthContext } from "../context/AuthContext";
 import { Avatar } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 
-const bookings = [
+interface Booking {
+  id: string;
+  userName: string;
+  timing: string;
+  location: string;
+  paid: boolean;
+}
+
+const bookings: Booking[] = [
   {
     id: "1",
     userName: "John Doe",
-    timing: "10:00 AM - 11:00 AM",
-    location: "Downtown Salon",
+    timing: "10:00 AM",
+    location: "Salon A",
     paid: true,
   },
   {
     id: "2",
     userName: "Jane Smith",
-    timing: "11:30 AM - 12:30 PM",
-    location: "City Center",
+    timing: "11:30 AM",
+    location: "Salon B",
     paid: false,
   },
   {
     id: "3",
     userName: "Bob Johnson",
-    timing: "1:00 PM - 2:00 PM",
-    location: "Uptown Salon",
+    timing: "1:00 PM",
+    location: "Salon C",
     paid: true,
   },
 ];
@@ -202,105 +51,105 @@ const bookings = [
 export default function ShopOwnerHome() {
   const [isDrawerVisible, setDrawerVisible] = useState(false);
   const { logout } = useContext(AuthContext);
+  const navigation = useNavigation();
+  const drawerTranslateX = useRef(new Animated.Value(300)).current;
 
-  const toggleDrawer = () => setDrawerVisible(!isDrawerVisible);
-
-  const handleAccept = (id: string) =>
-    console.log(`Accepted booking with ID: ${id}`);
-  const handleDecline = (id: string) =>
-    console.log(`Declined booking with ID: ${id}`);
-
-  const renderBooking = ({ item }: { item: (typeof bookings)[0] }) => (
-    <View style={styles.card}>
-      <View style={styles.row}>
-        <Text style={styles.label}>Name:</Text>
-        <Text style={styles.value}>{item.userName}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Timing:</Text>
-        <Text style={styles.value}>{item.timing}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Location:</Text>
-        <Text style={styles.value}>{item.location}</Text>
-      </View>
-      <View style={styles.row}>
-        <Text style={styles.label}>Payment:</Text>
-        <Text
-          style={[styles.paymentStatus, { color: item.paid ? "green" : "red" }]}
-        >
-          {item.paid ? "Paid" : "Not Paid"}
-        </Text>
-      </View>
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.button, styles.acceptButton]}
-          onPress={() => handleAccept(item.id)}
-        >
-          <Text style={styles.buttonText}>Accept</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.declineButton]}
-          onPress={() => handleDecline(item.id)}
-        >
-          <Text style={styles.buttonText}>Decline</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+  const toggleDrawer = () => {
+    if (!isDrawerVisible) {
+      setDrawerVisible(true);
+      Animated.timing(drawerTranslateX, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(drawerTranslateX, {
+        toValue: 300,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setDrawerVisible(false));
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Header with Avatar and Shop Owner Name (left), Title centered */}
+      {/* Header with Avatar & Name */}
       <View style={styles.header}>
-        <View style={styles.ownerInfo}>
-          <TouchableOpacity
-            onPress={toggleDrawer}
-            style={styles.avatarContainer}
-          >
-            <Avatar.Icon size={40} icon="account" />
-            <Text style={styles.shopOwnerName}>Shop Owner</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.title}>View Bookings</Text>
+        <TouchableOpacity onPress={toggleDrawer} style={styles.ownerInfo}>
+          <Avatar.Image
+            size={55}
+            source={{ uri: "https://via.placeholder.com/100" }}
+          />
+          <Text style={styles.shopOwnerName}>Shop Owner</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Bookings</Text>
       </View>
 
+      {/* Booking List */}
       <FlatList
         data={bookings}
         keyExtractor={(item) => item.id}
-        renderItem={renderBooking}
-        contentContainerStyle={styles.listContainer}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.bookingTitle}>{item.userName}</Text>
+            <Text style={styles.bookingDetails}>⏰ {item.timing}</Text>
+            <Text style={styles.bookingDetails}>📍 {item.location}</Text>
+            <Text
+              style={[
+                styles.paymentStatus,
+                item.paid ? styles.paid : styles.notPaid,
+              ]}
+            >
+              {item.paid ? "✅ Paid" : "❌ Not Paid"}
+            </Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.acceptButton}>
+                <Text style={styles.buttonText}>Accept</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.declineButton}>
+                <Text style={styles.buttonText}>Decline</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       />
 
       {/* Right-side Drawer Modal */}
-      <Modal transparent visible={isDrawerVisible} animationType="slide">
-        <Pressable style={styles.overlay} onPress={toggleDrawer} />
-        <View style={styles.drawer}>
-          {/* Drawer Header - Avatar and Name */}
-          <View style={styles.drawerHeader}>
-            <Image
-              source={{ uri: "https://via.placeholder.com/60" }}
-              style={styles.drawerAvatar}
-            />
-            <Text style={styles.drawerOwnerName}>Shop Owner</Text>
-          </View>
+      {isDrawerVisible && (
+        <Modal transparent visible={isDrawerVisible} animationType="fade">
+          <Pressable style={styles.overlay} onPress={toggleDrawer} />
+          <Animated.View
+            style={[
+              styles.drawer,
+              { transform: [{ translateX: drawerTranslateX }] },
+            ]}
+          >
+            <View style={styles.drawerHeader}>
+              <Avatar.Image
+                size={70}
+                source={{ uri: "https://via.placeholder.com/100" }}
+              />
+              <Text style={styles.drawerOwnerName}>Shop Owner</Text>
+            </View>
 
-          {/* Drawer Menu Items */}
-          <TouchableOpacity style={styles.drawerItem}>
-            <Text style={styles.drawerText}>Profile Settings</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.drawerItem}>
-            <Text style={styles.drawerText}>Offers</Text>
-          </TouchableOpacity>
-
-          {/* Logout Button - Pinned to Bottom */}
-          <View style={styles.drawerBottom}>
-            <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-              <Text style={styles.logoutText}>Logout</Text>
+            <TouchableOpacity
+              style={styles.drawerItem}
+              onPress={() => router.push("/shopOwners/ShopDetailsScreen")}
+            >
+              <Text style={styles.drawerText}>Profile Settings</Text>
             </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+            <TouchableOpacity style={styles.drawerItem}>
+              <Text style={styles.drawerText}>Offers</Text>
+            </TouchableOpacity>
+
+            <View style={styles.drawerBottom}>
+              <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+                <Text style={styles.logoutText}>Logout</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </Modal>
+      )}
     </View>
   );
 }
@@ -308,153 +157,95 @@ export default function ShopOwnerHome() {
 const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 10,
-    flex: 1,
-    backgroundColor: "whitesmoke",
-  },
+  container: { flex: 1, backgroundColor: "#F8FAFC", padding: 15 },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 40,
-    marginBottom: 20,
+    paddingVertical: 20,
+    backgroundColor: "#4A90E2",
+    borderRadius: 10,
+    paddingHorizontal: 15,
   },
-  ownerInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatarContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
+  ownerInfo: { flexDirection: "row", alignItems: "center" },
   shopOwnerName: {
-    marginLeft: 8,
-    fontSize: 16,
+    marginLeft: 10,
+    fontSize: 18,
     fontWeight: "bold",
-    color: "#333",
+    color: "#fff",
   },
-  title: {
-    flex: 1,
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "black",
-    textAlign: "center",
-    marginRight: 50, // To offset the centered title (depends on content)
-  },
-  listContainer: {
-    paddingBottom: 10,
-  },
+  title: { fontSize: 22, fontWeight: "bold", color: "#fff" },
   card: {
-    backgroundColor: "#fff",
-    padding: 15,
+    backgroundColor: "#FFFFFF",
+    padding: 20,
+    borderRadius: 15,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  bookingTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
+  bookingDetails: { fontSize: 15, color: "#666" },
+  paymentStatus: { fontSize: 16, fontWeight: "bold", marginTop: 5 },
+  paid: { color: "#2ECC71" },
+  notPaid: { color: "#E74C3C" },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 15,
+  },
+  acceptButton: {
+    backgroundColor: "#27AE60",
+    padding: 12,
     borderRadius: 8,
-    marginBottom: 10,
-    elevation: 2,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  label: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: "#333",
-  },
-  value: {
-    fontSize: 16,
-    color: "#555",
-  },
-  paymentStatus: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  button: {
-    padding: 10,
-    borderRadius: 5,
     flex: 1,
     marginHorizontal: 5,
     alignItems: "center",
   },
-  acceptButton: {
-    backgroundColor: "green",
-  },
   declineButton: {
-    backgroundColor: "red",
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 14,
-  },
-  // Drawer Styles
-  overlay: {
+    backgroundColor: "#E74C3C",
+    padding: 12,
+    borderRadius: 8,
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    marginHorizontal: 5,
+    alignItems: "center",
+  },
+  buttonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   drawer: {
     position: "absolute",
-    top: 0,
     right: 0,
-    width: width * 0.7,
-    height: "100%",
+    width: width * 0.75,
     backgroundColor: "#fff",
-    padding: 20,
-    elevation: 5,
+    height: "100%",
+    padding: 25,
   },
   drawerHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  drawerAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    marginRight: 10,
+    marginBottom: 25,
   },
   drawerOwnerName: {
-    fontSize: 18,
+    marginLeft: 10,
+    fontSize: 20,
     fontWeight: "bold",
-  },
-  drawerItem: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  drawerText: {
-    fontSize: 16,
     color: "#333",
   },
-  drawerBottom: {
-    position: "absolute",
-    bottom: 20,
-    left: 0,
-    right: 0,
-  },
+  drawerItem: { paddingVertical: 12 },
+  drawerText: { fontSize: 18, color: "#333" },
+  drawerBottom: { marginTop: "auto" },
   logoutButton: {
-    backgroundColor: "#f44336",
-    padding: 15,
+    padding: 12,
+    backgroundColor: "#FF3B30",
+    borderRadius: 8,
     alignItems: "center",
-    borderRadius: 5,
-    marginHorizontal: 10,
   },
-  logoutText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  logoutText: { color: "white", fontWeight: "bold", fontSize: 16 },
 });
