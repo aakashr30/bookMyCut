@@ -109,6 +109,31 @@ export const fetchaddServices = async (service, token) => {
   }
 };
 
+export const fetchMyShop = async (id, token) => {
+  try {
+    console.log(id,token,"---------")
+    const response = await axios.post("http://localhost:3001/api/shop/viewSigleShop",{id},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(response,"fecth my shop")
+    return response.data;
+  } catch (error) {
+    console.log(error)
+    console.error("Error in fetchAddShop:", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while Geting the shop.",
+    };
+  }
+};
+
 export const fetchViewAllBarbers = async () => {
   try {
     const response = await axios.get(
@@ -141,17 +166,21 @@ export const fetchViewAllServices = async () => {
 
 export const shopOwnerRegister = async (data) => {
   try {
+    console.log(data,"data register")
     const response = await fetch(
       "https://bookmycuts.onrender.com/api/auth/shop/register",
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       }
     );
+    if(response){
+
+      console.log(response,"Responce")
+    }
 
     if (!response.ok) {
       const errorMessage = await response.text();
@@ -169,6 +198,7 @@ export const shopOwnerRegister = async (data) => {
 
     return result;
   } catch (error) {
+    console.log(error)
     Toast.show({
       type: "error",
       text1: "Error",
@@ -179,6 +209,7 @@ export const shopOwnerRegister = async (data) => {
 
 export const shopOwnerLogin = async (data) => {
   try {
+    console.log(data)
     const response = await fetch(
       "https://bookmycuts.onrender.com/api/auth/shop/login",
       {
@@ -189,7 +220,7 @@ export const shopOwnerLogin = async (data) => {
         body: JSON.stringify(data),
       }
     );
-
+    console.log(response,"login response")
     if (!response.ok) {
       const errorMessage = await response.text();
       throw new Error(`Failed to Login: ${errorMessage}`);

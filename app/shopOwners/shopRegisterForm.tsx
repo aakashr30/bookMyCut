@@ -17,6 +17,7 @@ import Toast from "react-native-toast-message";
 import { AuthContext } from "../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 
 // Define form data type
 interface FormData {
@@ -71,6 +72,7 @@ const ShopOwnerForm = () => {
     console.log("Form Submitted:", data);
     try {
       const response = await shopOwnerRegister(data);
+      console.log(response,"registr esponse")
       if (response) {
         Toast.show({
           type: "success",
@@ -78,6 +80,7 @@ const ShopOwnerForm = () => {
           text2: "Registration successful",
         });
         reset();
+        router.push('/logins/LoginPage')
       }
     } catch (error) {
       Toast.show({

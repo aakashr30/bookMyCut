@@ -40,7 +40,7 @@ const RegisterScreen: React.FC = () => {
   ]);
   const [timings, setTimings] = useState<string[]>([""]);
   const [shop, setShop] = useState<Shop>({ name: "", address: "" });
-  const { isLoading, userToken, userType } = useContext(AuthContext);
+  const { isLoading, userToken } = useContext(AuthContext);
 
   useEffect(() => {
     const viewAllShop = async () => {

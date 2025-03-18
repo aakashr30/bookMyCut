@@ -9,27 +9,21 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userToken, setUserToken] = useState(null);
-  const [userType, setUserType] = useState(null); // Distinguish between 'user' and 'shopowner'
+  const [user,setUser] = useState(null)
   const navigation = useNavigation(); // Initialize here, within the component
 
   // User or Shop Owner Login
-  const login = async (email, password, type = "user") => {
-    const endpoint =
-      type === "shopowner"
-        ? "https://bookmycuts.onrender.com/api/auth/shop/login"
-        : "https://bookmycuts.onrender.com/api/auth/user/login";
-
+  const   login = async (email, password) => {
+    const endpoint = "https://bookmycuts.onrender.com/api/auth/shop/login"
     setIsLoading(true);
     try {
       const response = await axios.post(endpoint, { email, password });
-
       const token = response?.data.result.token;
+      console.log(token,"tokn after logiin")
       if (token) {
         setUserToken(token);
-        setUserType(type); // Now `type` exists!
-
         await AsyncStorage.setItem("userToken", token);
-        await AsyncStorage.setItem("userType", type);
+       
       } else {
         alert("Invalid response from server. Please try again.");
       }
@@ -46,10 +40,10 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       await AsyncStorage.removeItem("userToken");
-      await AsyncStorage.removeItem("userType");
+
 
       setUserToken(null);
-      setUserType(null);
+
 
       // Navigate to UserSelection screen
       navigation.navigate("UserSelection");
@@ -65,11 +59,9 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const token = await AsyncStorage.getItem("userToken");
-      const type = await AsyncStorage.getItem("userType");
 
-      if (token && type) {
+      if (token) {
         setUserToken(token);
-        setUserType(type);
       }
     } catch (error) {
       console.error("isLoggedIn Error:", error.message);
@@ -84,13 +76,14 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{
-        login,
-        logout,
-        isLoading,
-        userToken,
-        userType,
-      }}
+    value={{
+      login,
+      logout,
+      isLoading,
+      token: userToken,  // Change this line to expose userToken as token
+      user,              // Make sure user is exposed
+      setUser
+    }}
     >
       {children}
     </AuthContext.Provider>

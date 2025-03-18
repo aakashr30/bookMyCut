@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState,useContext } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import {
   fetchViewAllServices,
 } from "../api/shopOwnerApi/shopOnwer";
 import { router } from "expo-router";
+import { AuthContext } from "../context/AuthContext";
 
 // Define TypeScript interfaces
 interface Barber {
@@ -44,10 +45,12 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const { userToken, user } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log(user,userToken,"---ShopDetailsScreen")
         const shopData = await fetchViewAllShop();
         const barberData = await fetchViewAllBarbers();
         const serviceData = await fetchViewAllServices();

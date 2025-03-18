@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from "react";
+import React, { useContext, useState, useRef, useEffect } from "react";
 import {
   FlatList,
   View,
@@ -15,6 +15,11 @@ import { AuthContext } from "../context/AuthContext";
 import { Avatar } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
+import { jwtDecode } from "jwt-decode";
+
+import AsyncStorage from "@react-native-async-storage/async-storage"; 
+import { fetchMyShop } from "../api/shopOwnerApi/shopOnwer";
+
 
 interface Booking {
   id: string;
@@ -50,7 +55,8 @@ const bookings: Booking[] = [
 
 export default function ShopOwnerHome() {
   const [isDrawerVisible, setDrawerVisible] = useState(false);
-  const { logout } = useContext(AuthContext);
+  const { logout,token,setUser } = useContext(AuthContext);
+  const [shoper,setShoper] = useState(null)
   const navigation = useNavigation();
   const drawerTranslateX = useRef(new Animated.Value(300)).current;
 
@@ -71,6 +77,32 @@ export default function ShopOwnerHome() {
     }
   };
 
+  useEffect(()=>{
+    const fetchToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem("userToken"); // Correct way in React Native
+        console.log("Token:", token);
+
+        if (token) {
+          try {
+            const decoded = jwtDecode(token); // Correct usage
+            console.log("Decoded Token:", decoded);
+            let myShop = await fetchMyShop(decoded.id,token)
+            console.log(myShop,"myshopdata")
+            setShoper(myShop.data[0])
+            setUser(myShop.data[0])
+          } catch (error) {
+            console.error("Invalid Token", error);
+          }
+        } else {
+          console.warn("No token found!");
+        }
+      } catch (error) {
+        console.error("Error retrieving token:", error);
+      }
+    }
+    fetchToken()
+  })
   return (
     <View style={styles.container}>
       {/* Header with Avatar & Name */}
@@ -80,7 +112,7 @@ export default function ShopOwnerHome() {
             size={55}
             source={{ uri: "https://via.placeholder.com/100" }}
           />
-          <Text style={styles.shopOwnerName}>Shop Owner</Text>
+          <Text style={styles.shopOwnerName}>{shoper ? shoper.firstName : "Shoper"}</Text>
         </TouchableOpacity>
         <Text style={styles.title}>Bookings</Text>
       </View>

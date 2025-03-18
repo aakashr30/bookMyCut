@@ -11,10 +11,12 @@ import {
 } from "react-native";
 import Navbar from "../Components/Navbar/Navbar";
 import Banner from "../Components/Banner/Banner";
-import Cards from "../Components/Cards/Cards";
+import Cards from "../Components/cards/Cards";
 import Popular from "../Components/Popular/Popular";
-
+import AuthContext from "../context/AuthContext";
 const BookNow = () => {
+// const {token} = useContext(AuthContext);
+
   return (
     <View style={styles.outerContainer}>
       {/* Static Navbar */}

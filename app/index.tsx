@@ -1,9 +1,10 @@
 import { Redirect } from "expo-router";
 import { useContext } from "react";
-import { AuthContext } from "./context/AuthContext";
+import { AuthContext } from "./context/AuthContext"; // Ensure correct path
 import { ActivityIndicator, View } from "react-native";
+
 export default function Index() {
-  const { isLoading, userToken, userType } = useContext(AuthContext);
+  const { isLoading, userToken } = useContext(AuthContext);
 
   if (isLoading) {
     return (
@@ -13,13 +14,10 @@ export default function Index() {
     );
   }
 
-  if (userToken === null) {
-    if (userType === "shopowner") {
-      return <Redirect href="/shopOwners/shopOwnerHome" />;
-    } else {
-      return <Redirect href="/home" />;
-    }
-  } else {
-    return <Redirect href="/(tabs)/tabhome" />;
+  if (!userToken) {
+    return <Redirect href="/home" />;
   }
+
+  // If userToken exists, redirect to another page (e.g., dashboard)
+  return <Redirect href="/dashboard" />; // Change "/dashboard" to your desired page
 }
