@@ -34,24 +34,7 @@ interface Service {
   service: string;
   price: number;
 }
-// Sample list of barbers
-// const barbers = [
-//   { id: 1, name: "John", description: "Expert in Haircuts", rating: 4.5 },
-//   {
-//     id: 2,
-//     name: "Alex",
-//     description: "Specializes in Shaving and Massage",
-//     rating: 4.7,
-//   },
-//   {
-//     id: 3,
-//     name: "Ryan",
-//     description: "Best in hair styling and trimming",
-//     rating: 4.9,
-//   },
-// ];
 
-// Sample list of available time slots
 const timeSlots = [
   "9:00 AM",
   "10:00 AM",

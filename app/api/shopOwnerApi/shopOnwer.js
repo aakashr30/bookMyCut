@@ -297,7 +297,7 @@ export const fetchViewSingleShopBarber = async (userToken) => {
     const shopId = decoded?.id;
 
     if (!shopId) throw new Error("Shop ID is missing.");
-
+    console.log(shopId, "shop id");
     const response = await axios.get(
       `https://bookmycuts.onrender.com/api/shop/viewMyBarbers/${shopId}`,
       {
@@ -307,6 +307,7 @@ export const fetchViewSingleShopBarber = async (userToken) => {
         },
       }
     );
+    console.log(response,"---respose barber");
 
     return response.data;
   } catch (error) {
@@ -327,9 +328,9 @@ export const fetchViewSingleService = async (userToken) => {
     const shopId = decoded?.id;
 
     if (!shopId) throw new Error("Shop ID is missing.");
-
+    console.log(shopId, "shopId");
     const response = await axios.get(
-      `https://bookmycuts.onrender.com/api/shop/viewMyService/${shopId}`,
+      `http://localhost:3002/api/shop/viewMyService/${shopId}`,
       {
         headers: {
           Authorization: `Bearer ${userToken}`,
@@ -337,7 +338,7 @@ export const fetchViewSingleService = async (userToken) => {
         },
       }
     );
-
+    console.log(response,"response service");
     return response.data;
   } catch (error) {
     console.error("Error fetching services:", error?.response?.data || error);
