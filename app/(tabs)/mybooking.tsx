@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import Navbar from "../Components/Navbar/Navbar";
+import Navbar from "../Components/Navbar/userNavbar";
 import { Ionicons } from "@expo/vector-icons";
 
 const bookings = [

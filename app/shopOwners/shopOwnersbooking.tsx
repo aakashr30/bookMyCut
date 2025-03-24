@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   GestureResponderEvent,
 } from "react-native";
-
+// import { Toast } from "react-native-toast-message/lib/src/Toast";
+import FlashMessage, { showMessage } from "react-native-flash-message";
 interface Booking {
   id: string;
   customerName: string;
@@ -23,6 +24,20 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({ title, value }) => (
   <View style={styles.statsCard}>
+    <TouchableOpacity
+      onPress={() =>
+        showMessage({
+          message: "Success!",
+          description: "Your operation was successful.",
+          type: "success",
+        })
+      }
+    >
+      <Text style={{ fontSize: 20, color: "black" }}>Show Flash Message</Text>
+    </TouchableOpacity>
+
+    <FlashMessage position="top" />
+
     <Text style={styles.statsTitle}>{title}</Text>
     <Text style={styles.statsValue}>{value}</Text>
   </View>
@@ -66,10 +81,34 @@ const ShopOwnerScreen: React.FC = () => {
   };
 
   const pastBookings: Booking[] = [
-    { id: "1", customerName: "John Doe", service: "Haircut", date: "Jan 2, 2025", amount: 50 },
-    { id: "2", customerName: "Jane Smith", service: "Shave", date: "Jan 3, 2025", amount: 30 },
-    { id: "3", customerName: "Mike Brown", service: "Haircut + Beard Trim", date: "Jan 4, 2025", amount: 70 },
-    { id: "4", customerName: "Emily Davis", service: "Haircut", date: "Jan 5, 2025", amount: 50 },
+    {
+      id: "1",
+      customerName: "John Doe",
+      service: "Haircut",
+      date: "Jan 2, 2025",
+      amount: 50,
+    },
+    {
+      id: "2",
+      customerName: "Jane Smith",
+      service: "Shave",
+      date: "Jan 3, 2025",
+      amount: 30,
+    },
+    {
+      id: "3",
+      customerName: "Mike Brown",
+      service: "Haircut + Beard Trim",
+      date: "Jan 4, 2025",
+      amount: 70,
+    },
+    {
+      id: "4",
+      customerName: "Emily Davis",
+      service: "Haircut",
+      date: "Jan 5, 2025",
+      amount: 50,
+    },
   ];
 
   return (

@@ -12,12 +12,12 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import * as Yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { shopOwnerRegister } from "../api/shopOwnerApi/shopOnwer";
-import Toast from "react-native-toast-message";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import FlashMessage, { showMessage } from "react-native-flash-message";
+import { fetchUserRegister } from "@/app/api/userApi/userApi";
 
 // Define form data type
 interface FormData {
@@ -45,7 +45,7 @@ const validationSchema = Yup.object().shape({
     .required("Password is required"),
 });
 
-const ShopOwnerForm = () => {
+const userRegisterForm = () => {
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [shoperId, setShoperId] = useState("");
   const { token } = useContext(AuthContext);
@@ -63,30 +63,29 @@ const ShopOwnerForm = () => {
       mobileNo: "",
       email: "",
       password: "",
-      shoperId: "",
+      // shoperId: "",
     },
   });
 
   const onSubmit = async (data: FormData) => {
-    setSubmittedData(data);
-    console.log("Form Submitted:", data);
+    console.log("onSubmit triggered with data:", data);
     try {
-      const response = await shopOwnerRegister(data);
-      console.log(response,"registr esponse")
+      const response = await fetchUserRegister(data);
       if (response) {
-        Toast.show({
+        showMessage({
+          message: "Success!",
+          description: "Your operation was successful.",
           type: "success",
-          text1: "Success",
-          text2: "Registration successful",
         });
         reset();
-        router.push('/logins/LoginPage')
+        router.push("/logins/UserLogin");
       }
     } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Something went wrong",
+      console.error("Login Error:", error);
+      showMessage({
+        message: "Error!",
+        description: "Something went wrong.",
+        type: "danger", // Correct type instead of "error"
       });
     }
   };
@@ -115,6 +114,7 @@ const ShopOwnerForm = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
+      <FlashMessage position="top" />
       <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <Text style={styles.headerText}>Please Fill Your Details</Text>
@@ -227,4 +227,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ShopOwnerForm;
+export default userRegisterForm;

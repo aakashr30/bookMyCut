@@ -14,46 +14,70 @@ import {
   fetchAddBarbers,
   fetchaddServices,
 } from "../api/shopOwnerApi/shopOnwer";
-import { Ionicons } from "@expo/vector-icons"; // Import Ionicons for delete icon
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../context/AuthContext";
+import { Ionicons } from "@expo/vector-icons"; // For delete icons
+import Toast from "react-native-toast-message";
+import { jwtDecode } from "jwt-decode";
 
 interface Barber {
-  name: string;
-  city: string;
+  BarBarName: string;
+  From: string;
+  shopId: string;
 }
 
 interface Service {
-  service: string;
-  price: string;
+  ServiceName: string;
+  Rate: string;
+  shopId: string;
 }
 
 interface Shop {
   name: string;
   address: string;
+  website: string;
+  timing: string;
 }
 
 const RegisterScreen: React.FC = () => {
-  const [barbers, setBarbers] = useState<Barber[]>([{ name: "", city: "" }]);
+  const [barbers, setBarbers] = useState<Barber[]>([
+    {
+      BarBarName: "",
+      From: "",
+      shopId: "",
+    },
+  ]);
   const [services, setServices] = useState<Service[]>([
-    { service: "", price: "" },
+    { ServiceName: "", Rate: "", shopId: "" },
   ]);
   const [timings, setTimings] = useState<string[]>([""]);
-  const [shop, setShop] = useState<Shop>({ name: "", address: "" });
-  const { isLoading, userToken } = useContext(AuthContext);
+  const [shop, setShop] = useState<Shop>({
+    name: "",
+    address: "",
+    website: "",
+    timing: "",
+  });
+  const { token: userToken } = useContext(AuthContext);
 
+  console.log(userToken, "userToken");
   useEffect(() => {
     const viewAllShop = async () => {
-      const data = await fetchViewAllShop();
-      if (data && data.data.length > 0) {
-        const firstShop = data.data[0]; // Assuming we fetch the first shop
-        setShop({
-          name: firstShop.ShopName || "",
-          address: firstShop.ShopAddress || "",
-        });
-        setTimings(firstShop.timings || [""]);
+      try {
+        const data = await fetchViewAllShop();
+        if (data?.data?.length > 0) {
+          const firstShop = data.data[0];
+          setShop({
+            name: firstShop.ShopName || "",
+            address: firstShop.ShopAddress || "",
+            website: firstShop.website || "",
+            timing: firstShop.timing || "",
+          });
+          setTimings(firstShop.timings || [""]);
+        }
+      } catch (error) {
+        console.error("Error fetching shop data:", error);
       }
     };
+
     viewAllShop();
   }, []);
 
@@ -61,153 +85,116 @@ const RegisterScreen: React.FC = () => {
     setShop({ ...shop, [field]: text });
   };
 
-  const handleBarberChange = (
-    text: string,
-    index: number,
-    field: keyof Barber
-  ) => {
-    const updatedBarbers = [...barbers];
-    updatedBarbers[index][field] = text;
-    setBarbers(updatedBarbers);
-  };
-
-  const handleServiceChange = (
-    text: string,
-    index: number,
-    field: keyof Service
-  ) => {
-    const updatedServices = [...services];
-    updatedServices[index][field] = text;
-    setServices(updatedServices);
-  };
-
-  // const handleAddBarber = async () => {
-  //   try {
-  //     // Retrieve the auth token from AsyncStorage
-  //     const token = userToken;
-  //     console.log(token, "tokentoken");
-
-  //     // Check if the token exists
-  //     if (!token) {
-  //       Alert.alert("Error", "Authentication token is missing.");
-  //       return;
-  //     }
-
-  //     // If token exists, prepare new barber data
-  //     const newBarber = { name: "New Barber", city: "Unknown City" };
-
-  //     // Update UI immediately
-  //     setBarbers((prevBarbers) => [...prevBarbers, newBarber]);
-
-  //     // Call API to add barber
-  //     const response = await fetchAddBarbers(newBarber, userToken);
-
-  //     // Handle the response
-  //     if (response?.success) {
-  //       Alert.alert("Success", "Barber added successfully!");
-  //     } else {
-  //       console.error("Failed to add barber:", response?.message);
-  //       Alert.alert("Error", response?.message || "Failed to add barber.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error adding barber:", error);
-  //     Alert.alert("Error", "Something went wrong while adding barber.");
-  //   }
-  // };
-  const handleAddBarber = async () => {
-    try {
-      // Retrieve the auth token from AsyncStorage
-      const token = userToken;
-      console.log(token, "tokentoken");
-
-      // Check if the token exists
-      if (!token) {
-        Alert.alert("Error", "Authentication token is missing.");
-        return;
-      }
-
-      // Loop through the barbers and prepare FormData for each barber
-      for (let i = 0; i < barbers.length; i++) {
-        const barber = barbers[i];
-        const formData = new FormData();
-
-        // Append barber data to FormData
-        formData.append("name", barber.name);
-        formData.append("city", barber.city);
-
-        // Assuming the API accepts FormData for adding barbers
-        const response = await fetchAddBarbers(formData, userToken);
-
-        // Handle the response
-        if (response?.success) {
-          Alert.alert("Success", "Barber added successfully!");
-        } else {
-          console.error("Failed to add barber:", response?.message);
-          Alert.alert("Error", response?.message || "Failed to add barber.");
-        }
-      }
-    } catch (error) {
-      console.error("Error adding barber:", error);
-      Alert.alert("Error", "Something went wrong while adding barber.");
-    }
-  };
-
-  const handleAddService = async () => {
-    try {
-      // Retrieve the auth token from AsyncStorage (or use userToken if it's already available)
-      const token = userToken;
-      console.log(token, "tokentoken");
-
-      // Check if the token exists
-      if (!token) {
-        Alert.alert("Error", "Authentication token is missing.");
-        return;
-      }
-
-      // Loop through the services and prepare each service for API call
-      for (let i = 0; i < services.length; i++) {
-        const service = services[i];
-
-        // Prepare service data
-        const serviceData = {
-          name: service.service,
-          price: service.price,
-        };
-
-        // Call the API to add service
-        const response = await fetchaddServices(serviceData, token);
-
-        // Handle the response
-        if (response?.success) {
-          Alert.alert("Success", "Service added successfully!");
-        } else {
-          console.error("Failed to add service:", response?.message);
-          Alert.alert("Error", response?.message || "Failed to add service.");
-        }
-      }
-    } catch (error) {
-      console.error("Error adding service:", error);
-      Alert.alert("Error", "Something went wrong while adding the service.");
-    }
-  };
-
   const handleSubmit = async () => {
-    const requestData = { shop, barbers, services, timings };
+    console.log(userToken, "usertoekjn");
+    if (!shop.name || !shop.address) {
+      Alert.alert("Error", "Please fill in all required fields.");
+      return;
+    }
 
     try {
-      const response = await fetchAddShop(requestData);
-      if (response.success) {
+      const shopResponse = await fetchAddShop(shop, userToken);
+      if (shopResponse.success) {
         Alert.alert("Success", "Shop registered successfully!");
 
-        // Reset Form
-        setShop({ name: "", address: "" });
-        setBarbers([{ name: "", city: "" }]);
-        setServices([{ service: "", price: "" }]);
-        setTimings([""]);
+        // await fetchAddBarbers(barbers, userToken);
+        // await fetchaddServices(services, userToken);
       } else {
-        Alert.alert("Error", response.message || "Failed to register shop.");
+        Alert.alert(
+          "Error",
+          shopResponse.message || "Failed to register shop."
+        );
       }
     } catch (error) {
+      console.error("Error submitting data:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    }
+  };
+
+  // Call this function when submitting the form
+  const handleAddBarber = async () => {
+    if (!userToken) {
+      Alert.alert("Error", "User token is missing. Please log in again.");
+      return;
+    }
+
+    try {
+      // Decode the token and extract shopId
+      const decoded: any = jwtDecode(userToken);
+      const shopId = decoded?.id; // Make sure 'id' is the correct property for shopId
+
+      if (!shopId) {
+        Alert.alert("Error", "Shop ID is missing in token.");
+        return;
+      }
+
+      // Update each barber with the shopId
+      const updatedBarbers = barbers.map((barber) => ({
+        ...barber,
+        shopId,
+      }));
+
+      // Call the API with the updated barbers list
+      const response = await fetchAddBarbers(updatedBarbers, userToken);
+
+      if (response?.success) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "Barbers added successfully!",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: response?.message || "Failed to add barbers.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to add barbers:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    }
+  };
+  const handleAddService = async () => {
+    if (!userToken) {
+      Alert.alert("Error", "User token is missing. Please log in again.");
+      return;
+    }
+
+    try {
+      // Decode the token to extract shopId
+      const decoded: any = jwtDecode(userToken);
+      const shopId = decoded?.id; // Ensure 'id' is the correct property
+
+      if (!shopId) {
+        Alert.alert("Error", "Shop ID is missing in token.");
+        return;
+      }
+
+      // Update each service with the shopId
+      const updatedServices = services.map((service) => ({
+        ...service,
+        shopId,
+      }));
+
+      // Call API with updated services list
+      const response = await fetchaddServices(updatedServices, userToken);
+
+      if (response?.success) {
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "Services added successfully!",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: response?.message || "Failed to add services.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to add services:", error);
       Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
@@ -233,23 +220,30 @@ const RegisterScreen: React.FC = () => {
           value={shop.address}
           onChangeText={(text) => handleShopChange(text, "address")}
         />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Website"
+          placeholderTextColor="#999"
+          value={shop.website}
+          onChangeText={(text) => handleShopChange(text, "website")}
+        />
 
+        {/* Timings Section */}
         <Text style={styles.sectionHeader}>Timings</Text>
-        {timings.map((time, index) => (
-          <TextInput
-            key={index}
-            style={styles.input}
-            placeholder="Shop Timing"
-            placeholderTextColor="#999"
-            value={time}
-            onChangeText={(text) => {
-              const updatedTimings = [...timings];
-              updatedTimings[index] = text;
-              setTimings(updatedTimings);
-            }}
-          />
-        ))}
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Timing"
+          placeholderTextColor="#999"
+          value={shop.timing}
+          onChangeText={(text) => handleShopChange(text, "timing")}
+        />
 
+        {/* Submit Button moved here after Timings */}
+        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+          <Text style={styles.submitButtonText}>Submit</Text>
+        </TouchableOpacity>
+
+        {/* Barber Section */}
         <Text style={styles.sectionHeader}>Barbers</Text>
         {barbers.map((barber, index) => (
           <View key={index} style={styles.row}>
@@ -257,28 +251,95 @@ const RegisterScreen: React.FC = () => {
               style={styles.input}
               placeholder="Barber Name"
               placeholderTextColor="#999"
-              value={barber.name}
-              onChangeText={(text) => handleBarberChange(text, index, "name")}
+              value={barber.BarBarName}
+              onChangeText={(text) => {
+                const updatedBarbers = [...barbers];
+                updatedBarbers[index].BarBarName = text;
+                setBarbers(updatedBarbers);
+              }}
             />
             <TextInput
               style={styles.input}
               placeholder="Barber City"
               placeholderTextColor="#999"
-              value={barber.city}
-              onChangeText={(text) => handleBarberChange(text, index, "city")}
+              value={barber.From}
+              onChangeText={(text) => {
+                const updatedBarbers = [...barbers];
+                updatedBarbers[index].From = text;
+                setBarbers(updatedBarbers);
+              }}
             />
             <TouchableOpacity
-              style={styles.deleteButton}
-              // Add delete functionality if needed
+              onPress={() => setBarbers(barbers.filter((_, i) => i !== index))}
             >
-              <Ionicons name="trash" size={24} color="#ff0000" />
+              <Ionicons name="trash" size={24} color="red" />
             </TouchableOpacity>
           </View>
         ))}
+
         <TouchableOpacity style={styles.addButton} onPress={handleAddBarber}>
           <Text style={styles.addButtonText}>+ Add Barber</Text>
         </TouchableOpacity>
 
+        {/* Services Section */}
+        {/* <Text style={styles.sectionHeader}>Services</Text>
+        {services.map((service, index) => (
+          <View key={index} style={styles.row}>
+            <TextInput
+              style={styles.input}
+              placeholder="Service Name"
+              placeholderTextColor="#999"
+              value={service.ServiceName}
+              onChangeText={(text) => {
+                const updatedServices = [...services];
+                updatedServices[index] = {
+                  ...updatedServices[index],
+                  ServiceName: text,
+                };
+                setServices(updatedServices);
+              }}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Price"
+              placeholderTextColor="#999"
+              value={service.Rate}
+              keyboardType="numeric"
+              onChangeText={(text) => {
+                const updatedServices = [...services];
+                updatedServices[index] = {
+                  ...updatedServices[index],
+                  Rate: text,
+                };
+                setServices(updatedServices);
+              }}
+            />
+            <TouchableOpacity
+              onPress={() =>
+                setServices(services.filter((_, i) => i !== index))
+              }
+            >
+              <Ionicons name="trash" size={24} color="red" />
+            </TouchableOpacity>
+          </View>
+        ))}
+
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() =>
+            setServices([
+              ...services,
+              {
+                ServiceName: "",
+                Rate: "",
+                shopId: "",
+              },
+            ])
+          }
+        >
+          <Text style={styles.addButtonText}>+ Add Service</Text>
+        </TouchableOpacity> */}
+        {/* Services Section */}
         <Text style={styles.sectionHeader}>Services</Text>
         {services.map((service, index) => (
           <View key={index} style={styles.row}>
@@ -286,27 +347,43 @@ const RegisterScreen: React.FC = () => {
               style={styles.input}
               placeholder="Service Name"
               placeholderTextColor="#999"
-              value={service.service}
-              onChangeText={(text) =>
-                handleServiceChange(text, index, "service")
-              }
+              value={service.ServiceName}
+              onChangeText={(text) => {
+                const updatedServices = [...services];
+                updatedServices[index] = {
+                  ...updatedServices[index],
+                  ServiceName: text,
+                };
+                setServices(updatedServices);
+              }}
             />
             <TextInput
               style={styles.input}
               placeholder="Price"
               placeholderTextColor="#999"
-              value={service.price}
+              value={service.Rate}
               keyboardType="numeric"
-              onChangeText={(text) => handleServiceChange(text, index, "price")}
+              onChangeText={(text) => {
+                const updatedServices = [...services];
+                updatedServices[index] = {
+                  ...updatedServices[index],
+                  Rate: text,
+                };
+                setServices(updatedServices);
+              }}
             />
+            <TouchableOpacity
+              onPress={() =>
+                setServices(services.filter((_, i) => i !== index))
+              }
+            >
+              <Ionicons name="trash" size={24} color="red" />
+            </TouchableOpacity>
           </View>
         ))}
+
         <TouchableOpacity style={styles.addButton} onPress={handleAddService}>
           <Text style={styles.addButtonText}>+ Add Service</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -329,11 +406,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   input: {
     flex: 1,
     backgroundColor: "#333",
@@ -356,12 +429,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: "center",
+    marginTop: 16,
   },
   submitButtonText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  deleteButton: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
 });
 
 export default RegisterScreen;

@@ -1,6 +1,7 @@
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { AsyncStorage } from "react-native"; // Make sure to import AsyncStorage
+import { jwtDecode } from "jwt-decode";
 
 export const fetchViewAllShop = async () => {
   try {
@@ -111,8 +112,10 @@ export const fetchaddServices = async (service, token) => {
 
 export const fetchMyShop = async (id, token) => {
   try {
-    console.log(id,token,"---------")
-    const response = await axios.post("http://localhost:3001/api/shop/viewSigleShop",{id},
+    console.log(id, token, "---------");
+    const response = await axios.post(
+      "https://bookmycuts.onrender.com/api/shop/viewSigleShop",
+      { id },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -120,10 +123,10 @@ export const fetchMyShop = async (id, token) => {
         },
       }
     );
-    console.log(response,"fecth my shop")
+    console.log(response, "fecth my shop");
     return response.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     console.error("Error in fetchAddShop:", error?.response?.data || error);
     return {
       success: false,
@@ -148,7 +151,6 @@ export const fetchViewAllBarbers = async () => {
     });
   }
 };
-
 export const fetchViewAllServices = async () => {
   try {
     const response = await axios.get(
@@ -166,7 +168,7 @@ export const fetchViewAllServices = async () => {
 
 export const shopOwnerRegister = async (data) => {
   try {
-    console.log(data,"data register")
+    console.log(data, "data register");
     const response = await fetch(
       "https://bookmycuts.onrender.com/api/auth/shop/register",
       {
@@ -177,9 +179,8 @@ export const shopOwnerRegister = async (data) => {
         body: JSON.stringify(data),
       }
     );
-    if(response){
-
-      console.log(response,"Responce")
+    if (response) {
+      console.log(response, "Responce");
     }
 
     if (!response.ok) {
@@ -198,18 +199,18 @@ export const shopOwnerRegister = async (data) => {
 
     return result;
   } catch (error) {
-    console.log(error)
-    Toast.show({
-      type: "error",
-      text1: "Error",
-      text2: error.message || "Something went wrong",
+    console.log(error);
+    showMessage({
+      message: "Error!",
+      description: "Something went wrong.",
+      type: "danger", // Correct type instead of "error"
     });
   }
 };
 
 export const shopOwnerLogin = async (data) => {
   try {
-    console.log(data)
+    console.log(data);
     const response = await fetch(
       "https://bookmycuts.onrender.com/api/auth/shop/login",
       {
@@ -220,7 +221,7 @@ export const shopOwnerLogin = async (data) => {
         body: JSON.stringify(data),
       }
     );
-    console.log(response,"login response")
+    console.log(response, "login response");
     if (!response.ok) {
       const errorMessage = await response.text();
       throw new Error(`Failed to Login: ${errorMessage}`);
@@ -230,10 +231,10 @@ export const shopOwnerLogin = async (data) => {
 
     if (result.success) {
       // Show success message if login is successful
-      Toast.show({
+      showMessage({
+        message: "Success!",
+        description: "Login successful.",
         type: "success",
-        text1: "Success",
-        text2: "Login successful",
       });
 
       // Store token and userData in AsyncStorage
@@ -246,6 +247,7 @@ export const shopOwnerLogin = async (data) => {
       return {
         token: result.result.token,
         userData: result.result.userData,
+        success: result.success,
       };
     } else {
       throw new Error(result.message || "Login failed");
@@ -283,6 +285,67 @@ export const fetchAddBarbers = async (newBarber, token) => {
       message:
         error?.response?.data?.message ||
         "Something went wrong while adding a barber.",
+    };
+  }
+};
+
+export const fetchViewSingleShopBarber = async (userToken) => {
+  try {
+    if (!userToken) throw new Error("User token is missing.");
+
+    const decoded = jwtDecode(userToken);
+    const shopId = decoded?.id;
+
+    if (!shopId) throw new Error("Shop ID is missing.");
+
+    const response = await axios.get(
+      `https://bookmycuts.onrender.com/api/shop/viewMyBarbers/${shopId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching barbers:", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while fetching barbers.",
+    };
+  }
+};
+export const fetchViewSingleService = async (userToken) => {
+  try {
+    if (!userToken) throw new Error("User token is missing.");
+
+    const decoded = jwtDecode(userToken);
+    const shopId = decoded?.id;
+
+    if (!shopId) throw new Error("Shop ID is missing.");
+
+    const response = await axios.get(
+      `https://bookmycuts.onrender.com/api/shop/viewMyService/${shopId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching services:", error?.response?.data || error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while fetching services.",
     };
   }
 };

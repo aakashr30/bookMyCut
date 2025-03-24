@@ -333,7 +333,7 @@ const UserLogin: React.FC = () => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isUsingPhone, setIsUsingPhone] = useState(false);
 
-  const { login } = useContext(AuthContext); // Using AuthContext
+  const { userlogin } = useContext(AuthContext); // Using AuthContext
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:
@@ -350,7 +350,7 @@ const UserLogin: React.FC = () => {
 
     try {
       // Use the login function from AuthContext (userType = 'user')
-      await login(email, password, "user");
+      await userlogin(email, password, "user");
 
       Alert.alert("Success", "Login successful!");
       router.push("/(tabs)/tabhome");

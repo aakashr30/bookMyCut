@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AuthContext } from "@/app/context/AuthContext";
+import { Route } from "expo-router/build/Route";
+import { router } from "expo-router";
 
 const Navbar = () => {
   const { logout } = useContext(AuthContext);
@@ -105,15 +107,19 @@ const Navbar = () => {
                 </View>
 
                 {/* Modal Items */}
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => router.push("/screens/users/userRegisterForm")}
+                >
+                  <Text style={styles.modalItemText}>Account Setting</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}> Offers</Text>
                   {/* onPress={() => router.push("/logins/UserLoginRegisterForm")} */}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}>About</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalItem}>
-                  <Text style={styles.modalItemText}>Accounts</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.modalItem}>
                   <Text style={styles.modalItemText}>Rewards</Text>

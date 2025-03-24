@@ -48,21 +48,11 @@ export default function UserSelection() {
           {/* Shop Owner Button */}
           <TouchableOpacity
             style={[styles.button, styles.shopOwnerButton]}
-            onPress={() => router.push("/logins/LoginPage")} // Navigate to TabLayout
+            onPress={() => router.push("/logins/OwnerLogin")} // Navigate to TabLayout
           >
             <FontAwesome5 name="store" size={24} color="white" />
             <Text style={styles.buttonText}>Shop Owner</Text>
           </TouchableOpacity>
-
-          {/* Home Button with Icon */}
-          {/*         <TouchableOpacity
-          style={[styles.button, styles.homeButton]}
-            // onPress={() => navigation.navigate("Home")} // Navigate to Home
-            onPress={() => router.push("/(tabs)/tabhome")}
-        >
-          <FontAwesome5 name="home" size={24} color="white" />
-            <Text style={styles.buttonText}>Home          </Text>
-        </TouchableOpacity> */}
         </View>
       </Animated.View>
     </LinearGradient>
@@ -101,14 +91,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    flexDirection: "row", // Position the icon and text horizontally
-    alignItems: "center", // Center content vertically inside the button
-    justifyContent: "center", // Center content horizontally inside the button (optional)
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 15,
     marginVertical: 10,
     borderRadius: 50,
-    width: 300, // Adjust the width of the button
-    shadowColor: "#000", // Shadow effect
+    width: 300,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 10,
