@@ -1,31 +1,14 @@
 import axios from "axios";
 import Toast from "react-native-toast-message";
-import { AsyncStorage } from "react-native"; // Make sure to import AsyncStorage
+import { AsyncStorage } from "react-native";
 import { jwtDecode } from "jwt-decode";
 import FlashMessage, { showMessage } from "react-native-flash-message";
+import Axios from "@/app/Axios/axiosInstance";
+
 export const fetchUserRegister = async (data) => {
   try {
     console.log(data, "data register");
-    const response = await fetch(
-      "https://bookmycuts.onrender.com/api/auth/user/register",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-    if (response) {
-      console.log(response, "Responce");
-    }
-
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(`Failed to register: ${errorMessage}`);
-    }
-
-    const result = await response.json(); // Get API response
+    const response = await Axios.post("/api/auth/user/register", data);
 
     // Show success message if registration is successful
     Toast.show({
@@ -34,38 +17,35 @@ export const fetchUserRegister = async (data) => {
       text2: "Registration successful",
     });
 
-    return result;
+    return response.data;
   } catch (error) {
     console.log(error);
-    Toast.show({
-      type: "success",
-      text1: "Success",
-      text2: "Registration successful",
-    });
+    
+    // Handle error response
+    if (error.response) {
+      showMessage({
+        message: "Error!",
+        description: error.response.data.message || "Registration failed",
+        type: "danger",
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Something went wrong",
+      });
+    }
+
+    throw error;
   }
 };
+
 export const userLogin = async (data) => {
   try {
     console.log(data);
-    const response = await fetch(
-      "https://bookmycuts.onrender.com/api/auth/user/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }
-    );
-    console.log(response, "login response");
-    if (!response.ok) {
-      const errorMessage = await response.text();
-      throw new Error(`Failed to Login: ${errorMessage}`);
-    }
+    const response = await Axios.post("/api/auth/user/login", data);
 
-    const result = await response.json(); // Get API response
-
-    if (result.success) {
+    if (response.data.success) {
       // Show success message if login is successful
       showMessage({
         message: "Success!",
@@ -74,52 +54,36 @@ export const userLogin = async (data) => {
       });
 
       // Store token and userData in AsyncStorage
-      await AsyncStorage.setItem("authToken", result.result.token);
+      await AsyncStorage.setItem("authToken", response.data.result.token);
       await AsyncStorage.setItem(
-        "userData",
-        JSON.stringify(result.result.userData)
+        "userData", 
+        JSON.stringify(response.data.result.userData)
       );
 
       return {
-        token: result.result.token,
-        userData: result.result.userData,
-        success: result.success,
+        token: response.data.result.token,
+        userData: response.data.result.userData,
+        success: response.data.success,
       };
     } else {
-      throw new Error(result.message || "Login failed");
+      throw new Error(response.data.message || "Login failed");
     }
   } catch (error) {
-    showMessage({
-      message: "Error!",
-      description: "Something went wrong.",
-      type: "danger", // Correct type instead of "error"
-    });
+    // Handle error response
+    if (error.response) {
+      showMessage({
+        message: "Error!",
+        description: error.response.data.message || "Something went wrong",
+        type: "danger",
+      });
+    } else {
+      showMessage({
+        message: "Error!",
+        description: "Network error or server unavailable",
+        type: "danger",
+      });
+    }
+    
     return null; // Return null in case of failure
   }
 };
-// export const fetchViewAllShop = async (id, token) => {
-//   try {
-//     console.log(id, token, "---------");
-//     const response = await axios.get(
-//       "https://bookmycuts.onrender.com/api/shop/ViewAllShop",
-//       { id },
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//           "Content-Type": "application/json",
-//         },
-//       }
-//     );
-//     console.log(response, "fecth my shop");
-//     return response.data;
-//   } catch (error) {
-//     console.log(error);
-//     console.error("Error in fetchAddShop:", error?.response?.data || error);
-//     return {
-//       success: false,
-//       message:
-//         error?.response?.data?.message ||
-//         "Something went wrong while Geting the shop.",
-//     };
-//   }
-// };

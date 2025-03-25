@@ -12,12 +12,13 @@ import {
   fetchViewAllShop,
   fetchAddShop,
   fetchAddBarbers,
-  fetchaddServices,
+  fetchaddService,
 } from "../api/shopOwnerApi/shopOnwer";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons"; // For delete icons
 import Toast from "react-native-toast-message";
 import { jwtDecode } from "jwt-decode";
+import Axios from '../Axios/axiosInstance'
 
 interface Barber {
   BarBarName: string;
@@ -58,7 +59,7 @@ const RegisterScreen: React.FC = () => {
   });
   const { token: userToken } = useContext(AuthContext);
 
-  console.log(userToken, "userToken");
+  console.log(userToken, "userToken...........");
   useEffect(() => {
     const viewAllShop = async () => {
       try {
@@ -93,7 +94,7 @@ const RegisterScreen: React.FC = () => {
     }
 
     try {
-      const shopResponse = await fetchAddShop(shop, userToken);
+      const shopResponse = await fetchAddShop(shop);
       if (shopResponse.success) {
         Alert.alert("Success", "Shop registered successfully!");
 
@@ -113,6 +114,7 @@ const RegisterScreen: React.FC = () => {
 
   // Call this function when submitting the form
   const handleAddBarber = async () => {
+    console.log(userToken, "usertoekjn in add barber");
     if (!userToken) {
       Alert.alert("Error", "User token is missing. Please log in again.");
       return;
@@ -122,7 +124,7 @@ const RegisterScreen: React.FC = () => {
       // Decode the token and extract shopId
       const decoded: any = jwtDecode(userToken);
       const shopId = decoded?.id; // Make sure 'id' is the correct property for shopId
-
+      console.log(shopId, "shopId");
       if (!shopId) {
         Alert.alert("Error", "Shop ID is missing in token.");
         return;
@@ -135,7 +137,7 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call the API with the updated barbers list
-      const response = await fetchAddBarbers(updatedBarbers, userToken);
+      const response = await fetchAddBarbers(updatedBarbers,Axios);
 
       if (response?.success) {
         Toast.show({
@@ -178,7 +180,7 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call API with updated services list
-      const response = await fetchaddServices(updatedServices, userToken);
+      const response = await fetchaddService(updatedServices);
 
       if (response?.success) {
         Toast.show({

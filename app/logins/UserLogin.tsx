@@ -1,4 +1,3 @@
-// // import React, { useState } from "react";
 // import {
 //   View,
 //   Text,
@@ -13,8 +12,9 @@
 // import { router } from "expo-router";
 // import * as Google from "expo-auth-session/providers/google";
 // import * as SecureStore from "expo-secure-store";
-// import { useContext, useState } from "react";
+// import React, { useState, useContext } from "react";
 // import { AuthContext } from "../context/AuthContext";
+
 // const UserLogin: React.FC = () => {
 //   const [email, setEmail] = useState("");
 //   const [password, setPassword] = useState("");
@@ -22,7 +22,8 @@
 //   const [otp, setOtp] = useState("");
 //   const [isOtpSent, setIsOtpSent] = useState(false);
 //   const [isUsingPhone, setIsUsingPhone] = useState(false);
-//   const { login, logout } = useContext(AuthContext);
+
+//   const { userlogin } = useContext(AuthContext); // Using AuthContext
 
 //   const [request, response, promptAsync] = Google.useAuthRequest({
 //     clientId:
@@ -31,51 +32,31 @@
 //         : "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
 //   });
 
-//   // Handle Email & Password Login
-//   const handleLogin = () => {
-//     login();
+//   const handleLogin = async () => {
 //     if (!email || !password) {
 //       Alert.alert("Error", "Please fill in all fields.");
 //       return;
 //     }
-//     router.push("/(tabs)/tabhome");
+
+//     try {
+//       // Use the login function from AuthContext (userType = 'user')
+//       await userlogin(email, password, "user");
+
+//       Alert.alert("Success", "Login successful!");
+//       router.push("/(tabs)/tabhome");
+//     } catch (error) {
+//       Alert.alert("Error", "Invalid credentials or something went wrong.");
+//     }
 //   };
 
-//   // Handle Sending OTP
-//   // const handleSendOtp = async () => {
-//   //   if (!phoneNumber) {
-//   //     Alert.alert("Error", "Please enter a valid phone number.");
-//   //     return;
-//   //   }
-
-//   //   try {
-//   //     const response = await fetch("https://your-backend.com/send-otp", {
-//   //       method: "POST",
-//   //       headers: { "Content-Type": "application/json" },
-//   //       body: JSON.stringify({ phoneNumber }),
-//   //     });
-
-//   //     const data = await response.json();
-
-//   //     if (response.ok) {
-//   //       setIsOtpSent(true);
-//   //       Alert.alert("OTP Sent", `An OTP has been sent to ${phoneNumber}`);
-//   //     } else {
-//   //       Alert.alert("Error", data.message || "Failed to send OTP.");
-//   //     }
-//   //   } catch (error) {
-//   //     Alert.alert("Error", "Something went wrong. Please try again.");
-//   //   }
-//   // };
 //   const handleSendOtp = async () => {
 //     if (!phoneNumber) {
 //       Alert.alert("Error", "Please enter a valid phone number.");
 //       return;
 //     }
 
-//     console.log("Sending OTP to:", phoneNumber); // Debugging log
-
 //     try {
+//       // Backend API call to send OTP (this part is still custom, not in AuthContext)
 //       const response = await fetch("https://your-backend.com/send-otp", {
 //         method: "POST",
 //         headers: { "Content-Type": "application/json" },
@@ -83,7 +64,6 @@
 //       });
 
 //       const data = await response.json();
-//       console.log("OTP API Response:", data); // Debugging log
 
 //       if (response.ok) {
 //         setIsOtpSent(true);
@@ -92,21 +72,10 @@
 //         Alert.alert("Error", data.message || "Failed to send OTP.");
 //       }
 //     } catch (error) {
-//       console.error("Error sending OTP:", error);
 //       Alert.alert("Error", "Something went wrong. Please try again.");
 //     }
 //   };
 
-//   // const handleVerifyOtp = () => {
-//   //   if (!otp) {
-//   //     Alert.alert("Error", "Please enter the OTP.");
-//   //     return;
-//   //   }
-//   //   Alert.alert("Success", "OTP Verified!");
-//   //   router.push("/(tabs)/tabhome");
-//   // };
-
-//   // Handle OTP Verification
 //   const handleVerifyOtp = async () => {
 //     if (!otp) {
 //       Alert.alert("Error", "Please enter the OTP.");
@@ -114,26 +83,16 @@
 //     }
 
 //     try {
-//       const response = await fetch("https://your-backend.com/verify-otp", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ phoneNumber, otp }),
-//       });
+//       // Use `login` from AuthContext for OTP-based login
+//       await login(phoneNumber, otp, "user", true); // isOtpLogin = true
 
-//       const data = await response.json();
-
-//       if (response.ok) {
-//         Alert.alert("Success", "OTP Verified!");
-//         router.push("/(tabs)/tabhome");
-//       } else {
-//         Alert.alert("Error", data.message || "Invalid OTP. Try again.");
-//       }
+//       Alert.alert("Success", "OTP Verified!");
+//       router.push("/(tabs)/tabhome");
 //     } catch (error) {
-//       Alert.alert("Error", "Something went wrong. Please try again.");
+//       Alert.alert("Error", "Invalid OTP or something went wrong.");
 //     }
 //   };
 
-//   // Handle Google Login
 //   const handleGoogleLogin = async () => {
 //     try {
 //       const result = await promptAsync();
@@ -317,6 +276,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -332,8 +292,9 @@ const UserLogin: React.FC = () => {
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isUsingPhone, setIsUsingPhone] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { userlogin } = useContext(AuthContext); // Using AuthContext
+  const { userlogin } = useContext(AuthContext);
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:
@@ -348,14 +309,15 @@ const UserLogin: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      // Use the login function from AuthContext (userType = 'user')
       await userlogin(email, password, "user");
-
       Alert.alert("Success", "Login successful!");
       router.push("/(tabs)/tabhome");
     } catch (error) {
       Alert.alert("Error", "Invalid credentials or something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -365,8 +327,8 @@ const UserLogin: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      // Backend API call to send OTP (this part is still custom, not in AuthContext)
       const response = await fetch("https://your-backend.com/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -383,6 +345,8 @@ const UserLogin: React.FC = () => {
       }
     } catch (error) {
       Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -392,18 +356,20 @@ const UserLogin: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
-      // Use `login` from AuthContext for OTP-based login
-      await login(phoneNumber, otp, "user", true); // isOtpLogin = true
-
+      await userlogin(phoneNumber, otp, "user", true);
       Alert.alert("Success", "OTP Verified!");
       router.push("/(tabs)/tabhome");
     } catch (error) {
       Alert.alert("Error", "Invalid OTP or something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
+    setIsLoading(true);
     try {
       const result = await promptAsync();
       if (result.type === "success") {
@@ -417,7 +383,13 @@ const UserLogin: React.FC = () => {
       }
     } catch (error) {
       Alert.alert("Error", "Google login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  const navigateToRegister = () => {
+    router.push("/screens/users/userRegisterForm");
   };
 
   return (
@@ -428,85 +400,103 @@ const UserLogin: React.FC = () => {
       <View style={styles.loginContainer}>
         <Text style={styles.title}>Login</Text>
 
-        {isUsingPhone ? (
-          <>
-            <TextInput
-              placeholder="Phone Number"
-              placeholderTextColor="#aaa"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-              style={styles.input}
-            />
-            {isOtpSent ? (
-              <>
-                <TextInput
-                  placeholder="Enter OTP"
-                  placeholderTextColor="#aaa"
-                  value={otp}
-                  onChangeText={setOtp}
-                  keyboardType="numeric"
-                  style={styles.input}
-                />
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={handleVerifyOtp}
-                >
-                  <Text style={styles.buttonText}>Verify OTP</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={handleSendOtp}>
-                <Text style={styles.buttonText}>Send OTP</Text>
-              </TouchableOpacity>
-            )}
-          </>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#6200ea" />
         ) : (
           <>
-            <TextInput
-              placeholder="Email"
-              placeholderTextColor="#aaa"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="Password"
-              placeholderTextColor="#aaa"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              style={styles.input}
-            />
-            <TouchableOpacity style={styles.button} onPress={handleLogin}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
+            {isUsingPhone ? (
+              <>
+                <TextInput
+                  placeholder="Phone Number"
+                  placeholderTextColor="#aaa"
+                  value={phoneNumber}
+                  onChangeText={setPhoneNumber}
+                  keyboardType="phone-pad"
+                  style={styles.input}
+                />
+                {isOtpSent ? (
+                  <>
+                    <TextInput
+                      placeholder="Enter OTP"
+                      placeholderTextColor="#aaa"
+                      value={otp}
+                      onChangeText={setOtp}
+                      keyboardType="numeric"
+                      style={styles.input}
+                    />
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={handleVerifyOtp}
+                    >
+                      <Text style={styles.buttonText}>Verify OTP</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleSendOtp}
+                  >
+                    <Text style={styles.buttonText}>Send OTP</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            ) : (
+              <>
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor="#aaa"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  style={styles.input}
+                />
+                <TextInput
+                  placeholder="Password"
+                  placeholderTextColor="#aaa"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  style={styles.input}
+                />
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                  <Text style={styles.buttonText}>Login</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.gmailButton}
+                  onPress={handleGoogleLogin}
+                >
+                  <Ionicons
+                    name="logo-google"
+                    size={24}
+                    color="#fff"
+                    style={styles.icon}
+                  />
+                  <Text style={styles.buttonText}>Login with Google</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
             <TouchableOpacity
-              style={styles.gmailButton}
-              onPress={handleGoogleLogin}
+              style={styles.toggleButton}
+              onPress={() => setIsUsingPhone(!isUsingPhone)}
             >
-              <Ionicons
-                name="logo-google"
-                size={24}
-                color="#fff"
-                style={styles.icon}
-              />
-              <Text style={styles.buttonText}>Login with Google</Text>
+              <Text style={styles.linkText}>
+                {isUsingPhone
+                  ? "Use Email & Password Instead"
+                  : "Use Phone Number & OTP Instead"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.registerButton}
+              onPress={navigateToRegister}
+            >
+              <Text style={styles.registerText}>
+                Don't have an account? Register
+              </Text>
             </TouchableOpacity>
           </>
         )}
-
-        <TouchableOpacity
-          style={styles.toggleButton}
-          onPress={() => setIsUsingPhone(!isUsingPhone)}
-        >
-          <Text style={styles.linkText}>
-            {isUsingPhone
-              ? "Use Email & Password Instead"
-              : "Use Phone Number & OTP Instead"}
-          </Text>
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -575,5 +565,13 @@ const styles = StyleSheet.create({
   linkText: {
     color: "#6200ea",
     fontWeight: "bold",
+  },
+  registerButton: {
+    marginTop: 20,
+  },
+  registerText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textDecorationLine: "underline",
   },
 });

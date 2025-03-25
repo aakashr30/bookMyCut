@@ -1,38 +1,34 @@
-
 import axios from 'axios';
-import { AsyncStorage } from 'react-native';
-
-// Function to retrieve token from AsyncStorage
-const getToken = async () => {
-  try {
-    const token = await AsyncStorage.getItem('authToken');
-    return token;
-  } catch (error) {
-    console.error('Failed to retrieve token:', error);
-    return null;
-  }
-};
-
+import { AuthContext } from '../context/AuthContext';
+import { useContext } from 'react';
 // Create an Axios instance
 const Axios = axios.create({
-  baseURL: 'https://bookmycuts.onrender.com/api', // Your base API URL
+  baseURL: "https://bookmycuts.onrender.com/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Add the Bearer token dynamically to request headers using an interceptor
+// Modify the interceptor to accept token as a parameter
 Axios.interceptors.request.use(
-  async (config) => {
-    const token = await getToken(); // Retrieve token from AsyncStorage
+  (config) => {
+    const {token:userToken} = useContext(AuthContext);
+    // Get the token from a parameter or external function
+    const token = userToken; // You'll need to implement this function
+    
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`; // Attach token to Authorization header
+      config.headers["Authorization"] = `Bearer ${token}`;
+      console.log("Final Request Headers:", config.headers);
+    } else {
+      console.warn("No Token Found - Authorization header won't be sent!");
     }
+    
     return config;
   },
   (error) => {
+    console.error("Axios Interceptor Error:", error);
     return Promise.reject(error);
   }
 );
 
-export default Axios; // Export the Axios instance
+export default Axios;
