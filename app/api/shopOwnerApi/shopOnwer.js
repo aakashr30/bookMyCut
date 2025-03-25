@@ -351,7 +351,7 @@
 //     };
 //   }
 // };
-import Axios from "../Axios/axiosInstance"; // Import the Axios instance
+import Axios from "../../Axios/axiosInstance"; // Import the Axios instance
 import Toast from 'react-native-toast-message';
 
 // Fetch all shops
