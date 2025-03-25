@@ -24,18 +24,6 @@ interface StatsCardProps {
 
 const StatsCard: React.FC<StatsCardProps> = ({ title, value }) => (
   <View style={styles.statsCard}>
-    <TouchableOpacity
-      onPress={() =>
-        showMessage({
-          message: "Success!",
-          description: "Your operation was successful.",
-          type: "success",
-        })
-      }
-    >
-      <Text style={{ fontSize: 20, color: "black" }}>Show Flash Message</Text>
-    </TouchableOpacity>
-
     <FlashMessage position="top" />
 
     <Text style={styles.statsTitle}>{title}</Text>

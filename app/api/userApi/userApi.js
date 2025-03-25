@@ -44,6 +44,7 @@ export const fetchUserRegister = async (data) => {
     });
   }
 };
+
 export const userLogin = async (data) => {
   try {
     console.log(data);
@@ -97,6 +98,7 @@ export const userLogin = async (data) => {
     return null; // Return null in case of failure
   }
 };
+
 // export const fetchViewAllShop = async (id, token) => {
 //   try {
 //     console.log(id, token, "---------");

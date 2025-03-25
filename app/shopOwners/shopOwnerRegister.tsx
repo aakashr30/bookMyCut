@@ -12,7 +12,7 @@ import {
   fetchViewAllShop,
   fetchAddShop,
   fetchAddBarbers,
-  fetchaddServices,
+  fetchaddService,
 } from "../api/shopOwnerApi/shopOnwer";
 import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons"; // For delete icons
@@ -93,7 +93,7 @@ const RegisterScreen: React.FC = () => {
     }
 
     try {
-      const shopResponse = await fetchAddShop(shop, userToken);
+      const shopResponse = await fetchAddShop(shop);
       if (shopResponse.success) {
         Alert.alert("Success", "Shop registered successfully!");
 
@@ -135,7 +135,7 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call the API with the updated barbers list
-      const response = await fetchAddBarbers(updatedBarbers, userToken);
+      const response = await fetchAddBarbers(updatedBarbers);
 
       if (response?.success) {
         Toast.show({
@@ -178,7 +178,7 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call API with updated services list
-      const response = await fetchaddServices(updatedServices, userToken);
+      const response = await fetchaddService(updatedServices);
 
       if (response?.success) {
         Toast.show({
