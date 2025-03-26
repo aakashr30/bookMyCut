@@ -515,9 +515,13 @@ export const shopOwnerLogin = async (data) => {
     return null;
   }
 };
-export const fetchaddService = async (serviceData) => {
+export const fetchaddService = async (serviceData ,token) => {
   try {
-    const response = await Axios.post("/shop/addService", serviceData);
+    const response = await Axios.post("/shop/addService", {serviceDatas : serviceData[0]},      {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
     return response.data;
   } catch (error) {
     console.error("Error in fetchAddService:", error?.response?.data || error);
@@ -529,15 +533,18 @@ export const fetchaddService = async (serviceData) => {
     };
   }
 };
+// fetchAddBarbers function
 export const fetchAddBarbers = async (newBarber, token) => {
   try {
-    const response = await Axios.post("/shop/addBarber", { 
-      newBarbers: newBarber[0] 
-    }, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    const response = await Axios.post(
+      "/shop/addBarber",
+      { newBarbers: newBarber[0] },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       }
-    });
+    );
     return response.data;
   } catch (error) {
     console.error("Error in fetchAddBarbers:", error?.response?.data || error);

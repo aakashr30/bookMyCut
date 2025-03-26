@@ -28,7 +28,7 @@ interface Barber {
 
 interface Service {
   ServiceName: string;
-  Rate: string;
+  Rate: String;
   shopId: string;
 }
 
@@ -137,14 +137,22 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call the API with the updated barbers list
-      const response = await fetchAddBarbers(updatedBarbers,Axios);
-
+      const response = await fetchAddBarbers(updatedBarbers, userToken);
+      console.log(response, "fetchAddBarbersresponse");
       if (response?.success) {
         Toast.show({
           type: "success",
           text1: "Success",
           text2: "Barbers added successfully!",
         });
+              // Reset barbers form
+      setBarbers([
+        {
+          BarBarName: "",
+          From: "",
+          shopId: "",
+        },
+      ]);
       } else {
         Toast.show({
           type: "error",
@@ -180,14 +188,22 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call API with updated services list
-      const response = await fetchaddService(updatedServices);
-
+      const response = await fetchaddService(updatedServices,userToken);
+console.log(response, "updatedServicesresponse");
       if (response?.success) {
         Toast.show({
           type: "success",
           text1: "Success",
           text2: "Services added successfully!",
         });
+        setServices([
+          {
+            ServiceName: "",
+            Rate: "",
+            shopId: "",
+          },
+        ]);
+        // { ServiceName: "", Rate: "", Rate: "" },
       } else {
         Toast.show({
           type: "error",
