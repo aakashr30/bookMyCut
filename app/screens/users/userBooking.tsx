@@ -68,6 +68,7 @@ export default function BookNow() {
         console.log("Fetching barbers...");
 
         const barberData = await fetchViewSingleShopBarber(userToken);
+        console.log("Barber data in tsx", barberData);
         if (barberData?.data) {
           setBarberList(
             barberData.data.map((barber: any) => ({
@@ -81,6 +82,7 @@ export default function BookNow() {
         // Fetch service data
         if (userToken) {
           const serviceData = await fetchViewSingleService(userToken);
+          console.log("Service data in tsx", serviceData);
           if (serviceData?.data) {
             setServices(
               serviceData.data.map((service: any) => ({
