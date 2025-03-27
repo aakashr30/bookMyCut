@@ -67,9 +67,9 @@ const RegisterScreen: React.FC = () => {
           const firstShop = data.data[0];
           setShop({
             name: firstShop.ShopName || "",
-            address: firstShop.ShopAddress || "",
+            address: firstShop.City || "",
             website: firstShop.website || "",
-            timing: firstShop.timing || "",
+            timing: firstShop.Timing || "",
           });
           setTimings(firstShop.timings || [""]);
         }
@@ -372,12 +372,24 @@ const RegisterScreen: React.FC = () => {
                 setServices(updatedServices);
               }}
             />
+            <TextInput
+              style={styles.input}
+              placeholder="Estimate Time"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              // value={service.EstimateTime}
+              // onChangeText={(text) => {
+              //   const updatedServices = [...services];
+              //   updatedServices[index] = { ...service, EstimateTime: text };
+              //   setServices(updatedServices);
+              // }}
+            />
             <TouchableOpacity
               onPress={() =>
                 setServices(services.filter((_, i) => i !== index))
               }
             >
-              <Ionicons name="trash" size={24} color="red" />
+              {/* <Ionicons name="trash" size={24} color="red" /> */}
             </TouchableOpacity>
           </View>
         ))}

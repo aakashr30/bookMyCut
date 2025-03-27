@@ -35,20 +35,20 @@ interface Service {
   price: number;
 }
 
-const timeSlots = [
-  "9:00 AM",
-  "10:00 AM",
-  "11:00 AM",
-  "12:00 PM",
-  "1:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-];
+// const timeSlots = [
+//   "9:00 AM",
+//   "10:00 AM",
+//   "11:00 AM",
+//   "12:00 PM",
+//   "1:00 PM",
+//   "2:00 PM",
+//   "3:00 PM",
+//   "4:00 PM",
+//   "5:00 PM",
+// ];
 
 // Sample of already booked slots for today
-const bookedTimes = ["10:00 AM", "2:00 PM", "4:00 PM"];
+// const bookedTimes = ["10:00 AM", "2:00 PM", "4:00 PM"];
 
 export default function BookNow() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
@@ -294,7 +294,7 @@ export default function BookNow() {
               <Text style={styles.subtitle}>Choose Time Slot</Text>
             </View>
 
-            <ScrollView
+            {/* <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               style={styles.timeSlotContainer}
@@ -324,7 +324,7 @@ export default function BookNow() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </ScrollView> */}
           </View>
 
           {/* Section: Payment Summary */}

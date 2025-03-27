@@ -173,9 +173,6 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
                   <Text style={styles.infoLabel}>Contact</Text>
                   <Text style={styles.infoValue}>{shop.Mobile}</Text>
                 </View>
-                <TouchableOpacity style={styles.callButton}>
-                  <Text style={styles.callButtonText}>Call</Text>
-                </TouchableOpacity>
               </View>
 
               {shop.website && (
@@ -203,7 +200,7 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
                 showsHorizontalScrollIndicator={false}
                 style={styles.daysContainer}
               >
-                {weekdays.map((day) => (
+                {/* {weekdays.map((day) => (
                   <TouchableOpacity
                     key={day}
                     style={[
@@ -221,13 +218,12 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
                       {day.slice(0, 3)}
                     </Text>
                   </TouchableOpacity>
-                ))}
+                ))} */}
               </ScrollView>
 
               <View style={styles.timingContainer}>
                 <Text style={styles.timingText}>
-                  {shop.Timing?.[weekdays.indexOf(selectedDay)] ||
-                    "10:00 AM - 8:00 PM"}
+                  <Text style={styles.infoValue}>{shop.Timing}</Text>
                 </Text>
               </View>
             </View>
@@ -249,10 +245,10 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
               ) : (
                 <Text style={styles.emptyText}>No services available</Text>
               )}
-
+              {/* 
               <TouchableOpacity style={styles.viewAllButton}>
                 <Text style={styles.viewAllText}>Book Appointment</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Barbers */}
@@ -286,7 +282,7 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
             </View>
 
             {/* Reviews Placeholder */}
-            <View style={styles.card}>
+            {/* <View style={styles.card}>
               <View style={styles.sectionHeaderRow}>
                 <Ionicons name="star-half" size={20} color="#FFD700" />
                 <Text style={styles.sectionTitle}>Customer Reviews</Text>
@@ -295,7 +291,7 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity style={styles.viewAllButton}>
                 <Text style={styles.viewAllText}>Write a Review</Text>
               </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* Bottom padding */}
             <View style={styles.bottomPadding} />
