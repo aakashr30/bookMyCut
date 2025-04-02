@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 
 const BookNow = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,6 +24,10 @@ const BookNow = () => {
   const [selectedSort, setSelectedSort] = useState("Rating");
   const [numCustomers, setNumCustomers] = useState(1);
   const [totalAmount, setTotalAmount] = useState(0);
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
 
   const salons = [
     {

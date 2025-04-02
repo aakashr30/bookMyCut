@@ -18,6 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { fetchUserRegister } from "@/app/api/userApi/userApi";
+import { useNavigation } from "@react-navigation/native";
 
 // Define form data type
 interface FormData {
@@ -49,6 +50,10 @@ const userRegisterForm = () => {
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [shoperId, setShoperId] = useState("");
   const { token } = useContext(AuthContext);
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
   const {
     control,
     handleSubmit,

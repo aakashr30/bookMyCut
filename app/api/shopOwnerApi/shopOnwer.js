@@ -1,6 +1,6 @@
 import { jwtDecode } from "jwt-decode";
 import Axios from "../../Axios/axiosInstance"; // Import the Axios instance
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 // import axios from "axios";
 // import Toast from "react-native-toast-message";
 // import { AsyncStorage } from "react-native"; // Make sure to import AsyncStorage
@@ -302,15 +302,18 @@ export const fetchViewSingleShopBarber = async (userToken) => {
     console.log(shopId, "shop id");
     if (!shopId) throw new Error("Shop ID is missing.");
     console.log(shopId, "shop id");
-    const response = await Axios.get(
-      `/shop/viewMyBarbers/${shopId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await Axios.get(`/shop/viewMyBarbers/${shopId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (response?.status === 200) {
+      NotificationManager.show({
+        message: "Registration successful",
+        type: NotificationType.SUCCESS,
+      });
+    }
     console.log(response, "---respose barber");
 
     return response.data;
@@ -355,9 +358,7 @@ export const fetchViewSingleShopBarber = async (userToken) => {
 //   }
 // };
 
-
 // import Toast from "react-native-toast-message";
-
 
 // Fetch all shops
 export const fetchViewAllShop = async () => {
@@ -469,17 +470,35 @@ export const fetchViewAllServices = async () => {
 // Fetch shop's services based on shop ID from JWT token
 export const fetchViewSingleService = async (userToken) => {
   try {
-    const shopId = jwtDecode(userToken)?.id;
+    if (!userToken) throw new Error("User token is missing.");
+    console.log(userToken, "user token");
+    const decoded = jwtDecode(userToken);
+    const shopId = decoded?.id;
+    console.log(shopId, "shop id");
     if (!shopId) throw new Error("Shop ID is missing.");
-    console.log(shopId, "shopId",userToken);
-    const response = await Axios.get(`/shop/viewMyService/${shopId}`);
-    console.log(response,"response service");
+    console.log(shopId, "shop id");
+    const response = await Axios.get(`/shop/viewMyService/${shopId}`, {
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+    if (response?.success) {
+      NotificationManager.show({
+        message: "Registration successful",
+        type: NotificationType.SUCCESS,
+      });
+    }
+    console.log(response, "---respose barber");
+
     return response.data;
   } catch (error) {
-    console.error("Error fetching services for shop:", error);
+    console.error("Error fetching barbers:", error?.response?.data || error);
     return {
       success: false,
-      message: error.response?.data?.message || "Failed to fetch services.",
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while fetching barbers.",
     };
   }
 };
@@ -515,13 +534,17 @@ export const shopOwnerLogin = async (data) => {
     return null;
   }
 };
-export const fetchaddService = async (serviceData ,token) => {
+export const fetchaddService = async (serviceData, token) => {
   try {
-    const response = await Axios.post("/shop/addService", {serviceDatas : serviceData[0]},      {
-      headers: {
-        'Authorization': `Bearer ${token}`
+    const response = await Axios.post(
+      "/shop/addService",
+      { serviceDatas: serviceData[0] },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    });
+    );
     return response.data;
   } catch (error) {
     console.error("Error in fetchAddService:", error?.response?.data || error);
@@ -541,8 +564,8 @@ export const fetchAddBarbers = async (newBarber, token) => {
       { newBarbers: newBarber[0] },
       {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
     return response.data;
@@ -550,7 +573,9 @@ export const fetchAddBarbers = async (newBarber, token) => {
     console.error("Error in fetchAddBarbers:", error?.response?.data || error);
     return {
       success: false,
-      message: error?.response?.data?.message || "Something went wrong while adding a barber.",
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while adding a barber.",
     };
   }
 };

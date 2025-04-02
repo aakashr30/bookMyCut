@@ -20,7 +20,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { navigate } from "expo-router/build/global-state/routing";
 import { router } from "expo-router";
 import FlashMessage, { showMessage } from "react-native-flash-message";
-
+import { useNavigation } from "@react-navigation/native";
 // Define form data type
 interface FormData {
   firstName: string;
@@ -51,6 +51,10 @@ const ShopOwnerForm = () => {
   const [submittedData, setSubmittedData] = useState<FormData | null>(null);
   const [shoperId, setShoperId] = useState("");
   const { token } = useContext(AuthContext);
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
   const {
     control,
     handleSubmit,

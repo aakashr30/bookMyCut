@@ -13,8 +13,10 @@ import { router } from "expo-router";
 
 export default function UserSelection() {
   const [fadeAnim] = useState(new Animated.Value(0)); // Initial fade value
-  const navigation = useNavigation<any>(); // Initialize navigation with any type
-
+  const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false }); // Hide navigation
+  }, [navigation]);
   // Fade-in animation when the component mounts
   useEffect(() => {
     Animated.timing(fadeAnim, {

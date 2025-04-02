@@ -282,8 +282,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as Google from "expo-auth-session/providers/google";
 import * as SecureStore from "expo-secure-store";
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 
 const UserLogin: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -295,6 +296,7 @@ const UserLogin: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { userlogin } = useContext(AuthContext);
+  const navigation = useNavigation();
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     clientId:
@@ -302,7 +304,9 @@ const UserLogin: React.FC = () => {
         ? "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com"
         : "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
   });
-
+  useEffect(() => {
+    navigation.setOptions({ headerShown: false });
+  }, [navigation]);
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert("Error", "Please fill in all fields.");

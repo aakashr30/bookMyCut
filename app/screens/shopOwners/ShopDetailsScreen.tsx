@@ -17,7 +17,7 @@ import {
 import { router } from "expo-router";
 import { AuthContext } from "../../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useNavigation } from "@react-navigation/native";
 interface Barber {
   name: string;
   city?: string;
@@ -48,7 +48,6 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState("Monday");
   const { token: userToken, user } = useContext(AuthContext);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
