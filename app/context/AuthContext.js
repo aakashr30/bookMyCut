@@ -53,6 +53,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   };
+
   // Logout for both user and shopowner
   const logout = async () => {
     setIsLoading(true);
