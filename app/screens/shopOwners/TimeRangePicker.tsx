@@ -12,8 +12,13 @@ interface TimeRangePickerProps {
   startHour: number; // Start hour (e.g., 9 for 9:00 AM)
   endHour: number; // End hour (e.g., 17 for 5:00 PM)
   interval: number; // Time interval in minutes (e.g., 15 for 15-minute intervals)
-  onRangeSelected: (startTime: string, endTime: string) => void;
+  onRangeSelected: (
+    startTime: string,
+    endTime: string,
+    duration: number
+  ) => void;
   alreadyBookedSlots?: Array<{ start: string; end: string }>; // Booked time slots
+  duration?: number;
 }
 
 const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
@@ -66,7 +71,13 @@ const TimeRangePicker: React.FC<TimeRangePickerProps> = ({
   useEffect(() => {
     const startTimeString = indexToTimeString(rangeStart);
     const endTimeString = indexToTimeString(rangeEnd);
-    onRangeSelected(startTimeString, endTimeString);
+    console.log(startTimeString, "startTimeString");
+    console.log(endTimeString, "endTimeString");
+    onRangeSelected(
+      startTimeString,
+      endTimeString,
+      (rangeEnd - rangeStart) * interval
+    );
   }, [rangeStart, rangeEnd]);
 
   // Left handle pan responder````````````````````````````````````````````````````````````````````````````````````````````````````

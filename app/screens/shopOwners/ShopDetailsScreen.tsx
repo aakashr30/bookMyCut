@@ -17,7 +17,6 @@ import {
 import { router } from "expo-router";
 import { AuthContext } from "../../context/AuthContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
 interface Barber {
   name: string;
   city?: string;
@@ -48,51 +47,100 @@ const ShopDetailsScreen: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState("Monday");
   const { token: userToken, user } = useContext(AuthContext);
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        console.log(user, userToken, "---ShopDetailsScreen");
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       console.log(user, userToken, "---ShopDetailsScreen");
 
-        // Fetch shop data
+  //       // Fetch shop data
+  //       const shopData = await fetchViewAllShop();
+  //       if (shopData?.data?.length > 0) {
+  //         setShop(shopData.data[0]);
+  //       }
+
+  //       // Fetch barber data
+  //       if (userToken) {
+  //         const barberData = await fetchViewSingleShopBarber(userToken);
+  //         if (barberData?.data) {
+  //           setBarbers(
+  //             barberData.data.map((barber: any) => ({
+  //               name: barber.BarBarName,
+  //               city: barber.From,
+  //             }))
+  //           );
+  //         }
+  //       }
+
+  //       // Fetch service data
+  //       const serviceData = await fetchViewSingleService(userToken);
+  //       if (serviceData?.data) {
+  //         setServices(
+  //           serviceData.data.map((service: any) => ({
+  //             service: service.ServiceName,
+  //             price: service.Price,
+  //           }))
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching shop details:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [userToken]);
+
+  // Runs when token is available
+  useEffect(() => {
+    if (!userToken) return;
+
+    const fetchUserSpecificData = async () => {
+      try {
+        const barberData = await fetchViewSingleShopBarber(userToken);
+        const serviceData = await fetchViewSingleService(userToken);
+        console.log(barberData, "barberData");
+        console.log(serviceData, "serviceData");
+        if (barberData?.data) {
+          setBarbers(
+            barberData.data.map((barber: any) => ({
+              name: barber.BarBarName,
+              city: barber.From,
+            }))
+          );
+        }
+
+        if (serviceData?.data) {
+          setServices(
+            serviceData.data.map((service: any) => ({
+              service: service.ServiceName,
+              price: service.Price,
+            }))
+          );
+        }
+      } catch (e) {
+        console.error("Error fetching barber/service data", e);
+      }
+    };
+
+    fetchUserSpecificData();
+  }, [userToken]);
+
+  // Fetch shop data once (independent of token)
+  useEffect(() => {
+    const fetchInitialShopData = async () => {
+      try {
         const shopData = await fetchViewAllShop();
         if (shopData?.data?.length > 0) {
           setShop(shopData.data[0]);
         }
-
-        // Fetch barber data
-        if (userToken) {
-          const barberData = await fetchViewSingleShopBarber(userToken);
-          if (barberData?.data) {
-            setBarbers(
-              barberData.data.map((barber: any) => ({
-                name: barber.BarBarName,
-                city: barber.From,
-              }))
-            );
-          }
-        }
-
-        // Fetch service data
-        if (userToken) {
-          const serviceData = await fetchViewSingleService(userToken);
-          if (serviceData?.data) {
-            setServices(
-              serviceData.data.map((service: any) => ({
-                service: service.ServiceName,
-                price: service.Price,
-              }))
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching shop details:", error);
-      } finally {
-        setLoading(false);
+      } catch (e) {
+        console.error("Error fetching shop", e);
       }
     };
 
-    fetchData();
-  }, [userToken]);
+    fetchInitialShopData();
+  }, []);
 
   const onEditPress = () => {
     router.push("/shopOwners/shopOwnerRegister");

@@ -9,8 +9,9 @@ export const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userToken, setUserToken] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [user, setUser] = useState(null);
-  const navigation = useNavigation(); // Initialize here, within the component
+  const navigation = useNavigation();
 
   // User or Shop Owner Login
   const login = async (email, password) => {
@@ -19,7 +20,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(endpoint, { email, password });
       const token = response?.data.result.token;
-      console.log(token, "tokn after logiin");
       if (token) {
         setUserToken(token);
         await AsyncStorage.setItem("userToken", token);
@@ -39,10 +39,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post(endpoint, { email, password });
       const token = response?.data.result.token;
+      const data = response?.data?.result?.userData;
       console.log(token, "tokn after logiin");
       if (token) {
         setUserToken(token);
+        setUserData(data);
         await AsyncStorage.setItem("userToken", token);
+        await AsyncStorage.setItem("userData", JSON.stringify(data));
       } else {
         alert("Invalid response from server. Please try again.");
       }
@@ -114,6 +117,7 @@ export const AuthProvider = ({ children }) => {
         token: userToken, // Change this line to expose userToken as token
         user, // Make sure user is exposed
         setUser,
+        userData,
       }}
     >
       {children}

@@ -20,6 +20,7 @@ import {
 import { AuthContext } from "@/app/context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import TimeRangePicker from "../shopOwners/TimeRangePicker";
+import { bookNowApi } from "../../api/userApi/userApi.js";
 
 // Sample list of services
 const servicesList = [
@@ -37,25 +38,9 @@ interface Service {
   price: number;
 }
 
-// const timeSlots = [
-//   "9:00 AM",
-//   "10:00 AM",
-//   "11:00 AM",
-//   "12:00 PM",
-//   "1:00 PM",
-//   "2:00 PM",
-//   "3:00 PM",
-//   "4:00 PM",
-//   "5:00 PM",
-// ];
-
-// Sample of already booked slots for today
-// const bookedTimes = ["10:00 AM", "2:00 PM", "4:00 PM"];
-
 export default function BookNow() {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [selectedBarber, setSelectedBarber] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState<string>("2024-12-30");
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
   const [advancePayment, setAdvancePayment] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
@@ -66,7 +51,9 @@ export default function BookNow() {
   const [selectedTimeRange, setSelectedTimeRange] = useState({
     start: "",
     end: "",
+    duration: "",
   });
+  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
 
   const navigation = useNavigation();
   useEffect(() => {
@@ -165,20 +152,50 @@ export default function BookNow() {
   const handleTimeSlotSelect = (timeSlot: string) => {
     setSelectedTimeSlot(timeSlot);
   };
-  const handleTimeRangeSelection = (startTime: string, endTime: string) => {
-    setSelectedTimeRange({ start: startTime, end: endTime });
+
+  const handleTimeRangeSelection = (
+    startTime: string,
+    endTime: string,
+    duration: any
+  ) => {
+    setSelectedTimeRange({ start: startTime, end: endTime, duration });
+
+    setSelectedDuration(duration);
+  };
+  const convertTo24Hour = (time: string) => {
+    const [timePart, modifier] = time.split(" ");
+    let [hours, minutes] = timePart.split(":");
+
+    if (modifier === "PM" && hours !== "12") {
+      hours = String(parseInt(hours, 10) + 12);
+    } else if (modifier === "AM" && hours === "12") {
+      hours = "00";
+    }
+
+    return `${hours.padStart(2, "0")}:${minutes}`;
+  };
+  const handleConfirmBooking = async () => {
+    if (!selectedTimeRange.start || !selectedTimeRange.end) {
+      console.log("Please fill all the required fields.");
+      return;
+    }
+
+    try {
+      const barberId = barberList.map((a) => a.id);
+      const response = await bookNowApi(
+        "akash",
+        selectedTimeRange.start,
+        selectedTimeRange.end,
+        selectedDuration,
+        userToken
+      );
+
+      console.log("Booking successful!", response);
+    } catch (error) {
+      console.log("Error while booking:", error);
+    }
   };
 
-  const handleConfirmBooking = () => {
-    console.log("Booking confirmed!", {
-      barber: selectedBarber,
-      services: selectedServices,
-      date: selectedDate,
-      timeRange: selectedTimeRange,
-      amount: totalAmount,
-      advancePayment,
-    });
-  };
   return (
     <LinearGradient
       colors={["#000000", "#1A1A1A", "#2D2D2D"]}
@@ -193,7 +210,7 @@ export default function BookNow() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Book Appointment</Text>
+            <Text style={styles.title}>Book Appointments</Text>
             <View style={styles.divider} />
           </View>
 
@@ -277,37 +294,40 @@ export default function BookNow() {
             </View>
 
             <View style={styles.servicesList}>
-              {servicesList.map((service) => (
-                <TouchableOpacity
-                  key={service.name}
-                  style={styles.serviceItem}
-                  onPress={() => handleServiceSelect(service.name)}
-                >
-                  <View style={styles.serviceInfo}>
-                    <View
-                      style={[
-                        styles.checkbox,
-                        selectedServices.includes(service.name) &&
-                          styles.checked,
-                      ]}
-                    >
-                      {selectedServices.includes(service.name) && (
-                        <MaterialCommunityIcons
-                          name="check"
-                          size={16}
-                          color="#000"
-                        />
-                      )}
+              {serviceList.length ? (
+                serviceList.map((service) => (
+                  <TouchableOpacity
+                    key={service.name}
+                    style={styles.serviceItem}
+                    onPress={() => handleServiceSelect(service.name)}
+                  >
+                    <View style={styles.serviceInfo}>
+                      <View
+                        style={[
+                          styles.checkbox,
+                          selectedServices.includes(service.name) &&
+                            styles.checked, // assuming `selectedServices` holds selected names
+                        ]}
+                      >
+                        {selectedServices.includes(service.name) && (
+                          <MaterialCommunityIcons
+                            name="check"
+                            size={16}
+                            color="#000"
+                          />
+                        )}
+                      </View>
+                      <Text style={styles.serviceText}>{service.name}</Text>
                     </View>
-                    <Text style={styles.serviceText}>{service.name}</Text>
-                  </View>
-                  <Text style={styles.servicePrice}>₹{service.price}</Text>
-                </TouchableOpacity>
-              ))}
+                    <Text style={styles.servicePrice}>₹{service.price}</Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noservice}>No service Available</Text>
+              )}
             </View>
           </View>
 
-          {/* Section: Time Slots */}
           {/* Section: Time Slots */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -326,38 +346,6 @@ export default function BookNow() {
               onRangeSelected={handleTimeRangeSelection}
               alreadyBookedSlots={bookedTimeSlots}
             />
-
-            {/* <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.timeSlotContainer}
-            >
-              {timeSlots.map((timeSlot) => (
-                <TouchableOpacity
-                  key={timeSlot}
-                  style={[
-                    styles.timeSlot,
-                    bookedTimes.includes(timeSlot) && styles.bookedTimeSlot,
-                    selectedTimeSlot === timeSlot && styles.selectedTimeSlot,
-                  ]}
-                  onPress={() =>
-                    !bookedTimes.includes(timeSlot) &&
-                    handleTimeSlotSelect(timeSlot)
-                  }
-                  disabled={bookedTimes.includes(timeSlot)}
-                >
-                  <Text
-                    style={[
-                      styles.timeSlotText,
-                      bookedTimes.includes(timeSlot) && styles.bookedText,
-                      selectedTimeSlot === timeSlot && styles.selectedTimeText,
-                    ]}
-                  >
-                    {timeSlot}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView> */}
           </View>
 
           {/* Section: Payment Summary */}
@@ -409,6 +397,7 @@ export default function BookNow() {
     </LinearGradient>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -433,6 +422,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     letterSpacing: 0.5,
+    marginTop: 20,
   },
   divider: {
     width: 60,
@@ -669,5 +659,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     color: "#000",
+  },
+  noservice: {
+    color: "white",
+    fontSize: 15,
+    marginLeft: 10,
   },
 });

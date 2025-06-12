@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import {
   fetchViewAllShop,
+  fetchMyShop,
   fetchAddShop,
   fetchAddBarbers,
   fetchaddService,
@@ -18,7 +19,8 @@ import { AuthContext } from "../context/AuthContext";
 import { Ionicons } from "@expo/vector-icons"; // For delete icons
 import Toast from "react-native-toast-message";
 import { jwtDecode } from "jwt-decode";
-import Axios from '../Axios/axiosInstance'
+import Axios from "../Axios/axiosInstance";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Barber {
   BarBarName: string;
@@ -57,8 +59,8 @@ const RegisterScreen: React.FC = () => {
     website: "",
     timing: "",
   });
-  const { token: userToken } = useContext(AuthContext);
-
+  const { token: userToken, setUser } = useContext(AuthContext);
+  const [shoper, setShoper] = useState(null);
   console.log(userToken, "userToken...........");
   useEffect(() => {
     const viewAllShop = async () => {
@@ -66,12 +68,6 @@ const RegisterScreen: React.FC = () => {
         const data = await fetchViewAllShop();
         if (data?.data?.length > 0) {
           const firstShop = data.data[0];
-          setShop({
-            name: firstShop.ShopName || "",
-            address: firstShop.City || "",
-            website: firstShop.website || "",
-            timing: firstShop.Timing || "",
-          });
           setTimings(firstShop.timings || [""]);
         }
       } catch (error) {
@@ -81,7 +77,29 @@ const RegisterScreen: React.FC = () => {
 
     viewAllShop();
   }, []);
-
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+        if (token) {
+          try {
+            const decoded = jwtDecode(token);
+            let myShop = await fetchMyShop(decoded.id, token);
+            console.log(myShop, "musjfkjhk");
+            // setShoper(myShop.data[0]);
+            setUser(myShop.data[0]);
+            setShop({
+              name: myShop.data[0].firstName || "",
+              address: myShop.data[0].city || "",
+              website: myShop.data[0].firstName || "",
+              timing: myShop.data[0].firstName || "",
+            });
+          } catch (error) {}
+        }
+      } catch (error) {}
+    };
+    fetchToken();
+  }, []);
   const handleShopChange = (text: string, field: keyof Shop) => {
     setShop({ ...shop, [field]: text });
   };
@@ -94,7 +112,7 @@ const RegisterScreen: React.FC = () => {
     }
 
     try {
-      const shopResponse = await fetchAddShop(shop);
+      const shopResponse = await fetchAddShop(shop, userToken);
       if (shopResponse.success) {
         Alert.alert("Success", "Shop registered successfully!");
 
@@ -145,14 +163,14 @@ const RegisterScreen: React.FC = () => {
           text1: "Success",
           text2: "Barbers added successfully!",
         });
-              // Reset barbers form
-      setBarbers([
-        {
-          BarBarName: "",
-          From: "",
-          shopId: "",
-        },
-      ]);
+        // Reset barbers form
+        setBarbers([
+          {
+            BarBarName: "",
+            From: "",
+            shopId: "",
+          },
+        ]);
       } else {
         Toast.show({
           type: "error",
@@ -188,8 +206,8 @@ const RegisterScreen: React.FC = () => {
       }));
 
       // Call API with updated services list
-      const response = await fetchaddService(updatedServices,userToken);
-console.log(response, "updatedServicesresponse");
+      const response = await fetchaddService(updatedServices, userToken);
+      console.log(response, "updatedServicesresponse");
       if (response?.success) {
         Toast.show({
           type: "success",

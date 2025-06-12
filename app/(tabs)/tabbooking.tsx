@@ -216,6 +216,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   pageTitle: {
+    marginTop: 20,
     fontSize: 24,
     color: "gold",
     fontWeight: "bold",

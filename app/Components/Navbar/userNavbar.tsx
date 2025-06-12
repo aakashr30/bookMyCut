@@ -16,27 +16,9 @@ import { Route } from "expo-router/build/Route";
 import { router } from "expo-router";
 
 const Navbar = () => {
-  const { logout } = useContext(AuthContext);
+  const { userData, logout } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(300)).current;
-
-  const [userName, setUserName] = useState("Guest");
-
-  // Simulate API call to fetch user name
-  useEffect(() => {
-    const fetchUserName = async () => {
-      try {
-        // Simulating an API call delay
-        const response = await new Promise((resolve) =>
-          setTimeout(() => resolve({ data: { name: "John Doe" } }), 1000)
-        );
-        // setUserName(response.data.name);
-      } catch (error) {
-        console.error("Error fetching user name:", error);
-      }
-    };
-    fetchUserName();
-  }, []);
 
   const openModal = () => {
     setModalVisible(true);
@@ -62,7 +44,7 @@ const Navbar = () => {
   return (
     <View style={styles.navbar}>
       {/* Title */}
-      <Text style={styles.title}>{`Hello ${userName}`}</Text>
+      <Text style={styles.title}>{`Hello ${userData.firstName}`}</Text>
 
       {/* New Search Input Box with Search Icon */}
 
@@ -103,7 +85,9 @@ const Navbar = () => {
                   <View style={styles.userIconContainer}>
                     <MaterialIcons name="person" size={28} color="black" />
                   </View>
-                  <Text style={styles.modalHeaderText}>{userName}</Text>
+                  <Text style={styles.modalHeaderText}>
+                    {userData.firstName}
+                  </Text>
                 </View>
 
                 {/* Modal Items */}
