@@ -9,16 +9,20 @@ import {
   Easing,
   TouchableWithoutFeedback,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { AuthContext } from "@/app/context/AuthContext";
-import { Route } from "expo-router/build/Route";
 import { router } from "expo-router";
 
 const Navbar = () => {
   const { userData, logout } = useContext(AuthContext);
   const [modalVisible, setModalVisible] = useState(false);
   const slideAnim = useRef(new Animated.Value(300)).current;
+
+  // Safe user data handling
+  const userName = userData?.firstName || "User";
+  const isLoading = !userData;
 
   const openModal = () => {
     setModalVisible(true);
@@ -41,12 +45,18 @@ const Navbar = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <View style={[styles.navbar, { justifyContent: "center" }]}>
+        <ActivityIndicator size="small" color="#ffffff" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.navbar}>
-      {/* Title */}
-      <Text style={styles.title}>{`Hello ${userData.firstName}`}</Text>
-
-      {/* New Search Input Box with Search Icon */}
+      {/* Title with safe user name */}
+      <Text style={styles.title}>{`Hello ${userName}`}</Text>
 
       {/* Icons */}
       <View style={styles.iconContainer}>
@@ -65,64 +75,64 @@ const Navbar = () => {
       </View>
 
       {/* Sliding Modal */}
-      {modalVisible && (
-        <Modal
-          transparent={true}
-          animationType="none"
-          visible={modalVisible}
-          onRequestClose={closeModal}
-        >
-          <TouchableWithoutFeedback onPress={closeModal}>
-            <View style={styles.modalOverlay}>
-              <Animated.View
-                style={[
-                  styles.modalContainer,
-                  { transform: [{ translateX: slideAnim }] },
-                ]}
+      <Modal
+        transparent={true}
+        animationType="none"
+        visible={modalVisible}
+        onRequestClose={closeModal}
+      >
+        <TouchableWithoutFeedback onPress={closeModal}>
+          <View style={styles.modalOverlay}>
+            <Animated.View
+              style={[
+                styles.modalContainer,
+                { transform: [{ translateX: slideAnim }] },
+              ]}
+            >
+              {/* Modal Header */}
+              <View style={styles.modalHeader}>
+                <View style={styles.userIconContainer}>
+                  <MaterialIcons name="person" size={28} color="black" />
+                </View>
+                <Text style={styles.modalHeaderText}>{userName}</Text>
+              </View>
+
+              {/* Modal Items */}
+              <TouchableOpacity
+                style={styles.modalItem}
+                onPress={() => router.push("/screens/users/userRegisterForm")}
               >
-                {/* Modal Header */}
-                <View style={styles.modalHeader}>
-                  <View style={styles.userIconContainer}>
-                    <MaterialIcons name="person" size={28} color="black" />
-                  </View>
-                  <Text style={styles.modalHeaderText}>
-                    {userData.firstName}
+                <Text style={styles.modalItemText}>Account Setting</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.modalItem}>
+                <Text style={styles.modalItemText}>Offers</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalItem}>
+                <Text style={styles.modalItemText}>About</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalItem}>
+                <Text style={styles.modalItemText}>Rewards</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity style={styles.modalItem}>
+                <Text style={styles.modalItemText}>Setting</Text>
+              </TouchableOpacity>
+
+              {/* Logout at the Bottom */}
+              <View style={styles.logoutContainer}>
+                <TouchableOpacity style={styles.modalItem} onPress={logout}>
+                  <Text style={[styles.modalItemText, { color: "#FF3B30" }]}>
+                    Logout
                   </Text>
-                </View>
-
-                {/* Modal Items */}
-                <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => router.push("/screens/users/userRegisterForm")}
-                >
-                  <Text style={styles.modalItemText}>Account Setting</Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity style={styles.modalItem}>
-                  <Text style={styles.modalItemText}> Offers</Text>
-                  {/* onPress={() => router.push("/logins/UserLoginRegisterForm")} */}
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalItem}>
-                  <Text style={styles.modalItemText}>About</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalItem}>
-                  <Text style={styles.modalItemText}>Rewards</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.modalItem}>
-                  <Text style={styles.modalItemText}>Setting</Text>
-                </TouchableOpacity>
-
-                {/* Logout at the Bottom */}
-                <View style={styles.logoutContainer}>
-                  <TouchableOpacity style={styles.modalItem} onPress={logout}>
-                    <Text style={styles.modalItemText}>Logout</Text>
-                  </TouchableOpacity>
-                </View>
-              </Animated.View>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
-      )}
+              </View>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 };
@@ -147,7 +157,6 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  // New Search Input Box with Icon Inside
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -156,7 +165,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginLeft: 10,
-    width: "40%", // Adjust width as needed
+    width: "40%",
   },
   searchIcon: {
     marginRight: 8,
@@ -228,6 +237,9 @@ const styles = StyleSheet.create({
   },
   logoutContainer: {
     marginTop: "auto",
+    borderTopWidth: 1,
+    borderTopColor: "#333",
+    paddingTop: 15,
   },
 });
 

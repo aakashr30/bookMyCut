@@ -4,393 +4,438 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Image,
   Animated,
   ScrollView,
   StatusBar,
+  Alert,
+  ActivityIndicator,
+  Platform,
+  LogBox
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient"; // Linear Gradient for background
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons"; // Font Awesome icons for design
-import { Picker } from "@react-native-picker/picker"; // Picker import
+import { LinearGradient } from "expo-linear-gradient";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 import {
-  fetchAddShop,
   fetchViewSingleService,
   fetchViewSingleShopBarber,
 } from "@/app/api/shopOwnerApi/shopOnwer";
 import { AuthContext } from "@/app/context/AuthContext";
-import { useNavigation } from "@react-navigation/native";
-import TimeRangePicker from "../shopOwners/TimeRangePicker";
-import { bookNowApi } from "../../api/userApi/userApi.js";
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { bookNowApi } from "../../api/userApi/userApi";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-// Sample list of services
-const servicesList = [
-  { name: "Haircut", price: 100 },
-  { name: "Shaving", price: 50 },
-  { name: "Massage", price: 200 },
-];
+// Ignore specific warnings
+LogBox.ignoreLogs([
+  'scrollToIndex should be used',
+  'Non-serializable values were found in the navigation state'
+]);
+
 interface Barber {
+  id: string;
   name: string;
-  city?: string;
+  description?: string;
+  rating?: number;
 }
 
 interface Service {
-  service: string;
+  id: string;
+  name: string;
   price: number;
 }
 
 export default function BookNow() {
+  const { shopId } = useLocalSearchParams<{ shopId: string }>();
+  const navigation = useNavigation();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedTimePeriod, setSelectedTimePeriod] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [selectedBarber, setSelectedBarber] = useState<any>(null);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
+  const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
   const [advancePayment, setAdvancePayment] = useState(false);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [fadeAnim] = useState(new Animated.Value(0)); // Initial fade value
-  const [barberList, setBarberList] = useState<any[]>([]); // Initialize as an array
-  const [serviceList, setServices] = useState<any[]>([]); // Initialize as an array
-  const { token: userToken, user } = useContext(AuthContext);
-  const [selectedTimeRange, setSelectedTimeRange] = useState({
-    start: "",
-    end: "",
-    duration: "",
-  });
-  const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
+  const [fadeAnim] = useState(new Animated.Value(0));
+  const [barberList, setBarberList] = useState<Barber[]>([]);
+  const [serviceList, setServiceList] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { token: userToken } = useContext(AuthContext);
 
-  const navigation = useNavigation();
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
-  useEffect(() => {
-    const fetchBarbers = async () => {
-      try {
-        console.log("Fetching barbers...");
 
-        const barberData = await fetchViewSingleShopBarber(userToken);
-        console.log("Barber data in tsx", barberData);
-        if (barberData?.data) {
-          setBarberList(
-            barberData.data.map((barber: any) => ({
-              id: barber.id, // Ensure correct property names from API response
-              name: barber.BarBarName,
-              description: barber.Description || "Experienced Barber",
-              rating: barber.Rating || 4.5, // Default rating if not provided
-            }))
-          );
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!shopId || !userToken) {
+          Alert.alert("Error", "Missing shop ID or token");
+          return;
         }
-        // Fetch service data
-        if (userToken) {
-          const serviceData = await fetchViewSingleService(userToken);
-          console.log("Service data in tsx", serviceData);
-          if (serviceData?.data) {
-            setServices(
-              serviceData.data.map((service: any) => ({
-                service: service.ServiceName,
-                price: service.Price,
-              }))
-            );
-          }
+
+        const [barberResponse, serviceResponse] = await Promise.all([
+          fetchViewSingleShopBarber(userToken, shopId),
+          fetchViewSingleService(userToken, shopId)
+        ]);
+
+        if (barberResponse?.data) {
+          setBarberList(barberResponse.data.map((b: any) => ({
+            id: b._id,
+            name: b.BarBarName || "Barber",
+            description: b.From || "Professional barber",
+            rating: b.Rating || 4.5,
+          })));
         }
+
+        if (serviceResponse?.data) {
+          setServiceList(serviceResponse.data.map((s: any) => ({
+            id: s._id,
+            name: s.ServiceName,
+            price: Number(s.Rate) || 0,
+          })));
+        }
+
       } catch (error) {
-        console.log("Error fetching barbers", error);
+        console.error("Failed to fetch data:", error);
+        Alert.alert("Error", "Failed to load shop data. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (userToken) {
-      fetchBarbers();
-    }
+    fetchData();
+  }, [shopId, userToken]);
 
+  useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1500,
+      duration: 1000,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim, userToken]);
+  }, []);
 
-  // Fade-in animation when the component mounts
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1, // Animate to full opacity
-      duration: 1500, // Duration of animation
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
-
-  // Handle service selection
-  const handleServiceSelect = (service: string) => {
-    let updatedServices = [...selectedServices];
-    if (updatedServices.includes(service)) {
-      updatedServices = updatedServices.filter((item) => item !== service);
-    } else {
-      updatedServices.push(service);
-    }
-    setSelectedServices(updatedServices);
-    calculateTotalAmount(updatedServices);
-  };
-
-  // Calculate total amount based on selected services
-  const calculateTotalAmount = (selectedServices: string[]) => {
-    const total = selectedServices.reduce((acc, service) => {
-      const serviceObj = servicesList.find((item) => item.name === service);
-      return acc + (serviceObj ? serviceObj.price : 0);
+  useEffect(() => {
+    const total = selectedServices.reduce((sum, id) => {
+      const service = serviceList.find(s => s.id === id);
+      return sum + (service?.price || 0);
     }, 0);
     setTotalAmount(total);
-  };
-  const bookedTimeSlots = [
-    { start: "10:00 AM", end: "11:00 AM" },
-    { start: "2:00 PM", end: "3:00 PM" },
-  ];
-  // Handle advance payment option
-  const handlePaymentOptionChange = () => {
-    setAdvancePayment(!advancePayment);
+  }, [selectedServices, serviceList]);
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    const currentDate = selectedDate || new Date();
+    setShowDatePicker(Platform.OS === 'ios');
+    setSelectedDate(currentDate);
   };
 
-  // Handle barber selection
-  const handleBarberSelect = (barber: any) => {
-    setSelectedBarber(barber);
+  const formatDate = (date: Date | null) => {
+    if (!date) return "Select a date";
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
-  // Handle time slot selection
-  const handleTimeSlotSelect = (timeSlot: string) => {
-    setSelectedTimeSlot(timeSlot);
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedServices(prev => 
+      prev.includes(serviceId) 
+        ? prev.filter(id => id !== serviceId) 
+        : [...prev, serviceId]
+    );
   };
 
-  const handleTimeRangeSelection = (
-    startTime: string,
-    endTime: string,
-    duration: any
-  ) => {
-    setSelectedTimeRange({ start: startTime, end: endTime, duration });
-
-    setSelectedDuration(duration);
-  };
-  const convertTo24Hour = (time: string) => {
-    const [timePart, modifier] = time.split(" ");
-    let [hours, minutes] = timePart.split(":");
-
-    if (modifier === "PM" && hours !== "12") {
-      hours = String(parseInt(hours, 10) + 12);
-    } else if (modifier === "AM" && hours === "12") {
-      hours = "00";
-    }
-
-    return `${hours.padStart(2, "0")}:${minutes}`;
-  };
   const handleConfirmBooking = async () => {
-    if (!selectedTimeRange.start || !selectedTimeRange.end) {
-      console.log("Please fill all the required fields.");
+    if (!selectedBarber) {
+      Alert.alert("Error", "Please select a barber");
+      return;
+    }
+    
+    if (selectedServices.length === 0) {
+      Alert.alert("Error", "Please select at least one service");
+      return;
+    }
+    
+    if (!selectedDate) {
+      Alert.alert("Error", "Please select a date");
+      return;
+    }
+    
+    if (!selectedTimePeriod) {
+      Alert.alert("Error", "Please select a time period");
       return;
     }
 
     try {
-      const barberId = barberList.map((a) => a.id);
-      const response = await bookNowApi(
-        "akash",
-        selectedTimeRange.start,
-        selectedTimeRange.end,
-        selectedDuration,
-        userToken
-      );
+      const bookingData = {
+        shopId,
+        barberId: selectedBarber.id,
+        serviceIds: selectedServices,
+        date: selectedDate.toISOString().split('T')[0],
+        timePeriod: selectedTimePeriod,
+        totalAmount: totalAmount + (advancePayment ? 20 : 0),
+        advancePayment,
+      };
 
-      console.log("Booking successful!", response);
+      const response = await bookNowApi(bookingData, userToken);
+      
+      if (response.success) {
+        Alert.alert("Success", "Booking confirmed!");
+        // Reset form
+        setSelectedServices([]);
+        setSelectedBarber(null);
+        setSelectedDate(null);
+        setSelectedTimePeriod(null);
+        setAdvancePayment(false);
+      } else {
+        Alert.alert("Error", response.message || "Booking failed");
+      }
     } catch (error) {
-      console.log("Error while booking:", error);
+      console.error("Booking error:", error);
+      Alert.alert("Error", "Failed to complete booking");
     }
   };
 
+  if (loading) {
+    return (
+      <LinearGradient colors={["#000000", "#1A1A1A"]} style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FFD700" />
+        <Text style={styles.loadingText}>Loading shop details...</Text>
+      </LinearGradient>
+    );
+  }
+
   return (
-    <LinearGradient
-      colors={["#000000", "#1A1A1A", "#2D2D2D"]}
-      style={styles.container}
-    >
+    <LinearGradient colors={["#000000", "#1A1A1A", "#2D2D2D"]} style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
+      
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Scrollable content */}
-        <ScrollView
-          contentContainerStyle={styles.scrollViewContent}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
+          {/* Header Section */}
           <View style={styles.header}>
-            <Text style={styles.title}>Book Appointments</Text>
+            <Text style={styles.title}>Book Appointment</Text>
             <View style={styles.divider} />
           </View>
 
-          {/* Shop Image with overlay */}
-          <View style={styles.imageContainer}>
-            <Image
-              source={{
-                uri: "https://www.shutterstock.com/image-photo/barbershop-interior-modern-hair-beauty-600nw-2092464307.jpg",
-              }}
-              style={styles.shopImage}
-              resizeMode="cover"
-            />
-            <View style={styles.imageOverlay} />
-          </View>
-
-          {/* Section: Barber Selection */}
+          {/* Date Selection */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons
-                name="account-group"
-                size={22}
-                color="#fff"
-              />
-              <Text style={styles.subtitle}>Choose Your Barber</Text>
+              <MaterialCommunityIcons name="calendar" size={24} color="#FFD700" />
+              <Text style={styles.sectionTitle}>Select Date</Text>
             </View>
+            
+            <TouchableOpacity 
+              style={styles.datePickerButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={styles.datePickerText}>
+                {formatDate(selectedDate)}
+              </Text>
+              <MaterialCommunityIcons name="calendar-arrow-right" size={24} color="#FFD700" />
+            </TouchableOpacity>
 
+            {showDatePicker && (
+              <DateTimePicker
+                value={selectedDate || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={onChangeDate}
+                minimumDate={new Date()}
+              />
+            )}
+          </View>
+
+          {/* Barber Selection */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="account" size={24} color="#FFD700" />
+              <Text style={styles.sectionTitle}>Select Barber</Text>
+            </View>
+            
             <View style={styles.pickerContainer}>
               <Picker
-                selectedValue={selectedBarber ? selectedBarber.id : ""}
-                style={styles.picker}
-                dropdownIconColor="black"
-                onValueChange={(itemValue) => {
-                  const barber = barberList.find((b) => b.id === itemValue);
-                  handleBarberSelect(barber);
+                selectedValue={selectedBarber?.id || ""}
+                onValueChange={(value) => {
+                  const barber = barberList.find(b => b.id === value);
+                  setSelectedBarber(barber || null);
                 }}
+                style={styles.picker}
+                dropdownIconColor="#FFD700"
+                mode="dropdown"
               >
-                <Picker.Item label="Select a barber" value="" color="black" />
-                {barberList.map((barber) => (
-                  <Picker.Item
-                    key={barber.id}
-                    label={barber.name}
-                    value={barber.id}
-                    color="black"
+                <Picker.Item label="Select a barber" value="" />
+                {barberList.map(barber => (
+                  <Picker.Item 
+                    key={barber.id} 
+                    label={barber.name} 
+                    value={barber.id} 
                   />
                 ))}
               </Picker>
             </View>
+          </View>
 
-            {/* Barber Description & Rating */}
-            {selectedBarber && (
-              <View style={styles.barberCard}>
-                <View style={styles.barberHeader}>
-                  <Text style={styles.barberName}>{selectedBarber.name}</Text>
-                  <View style={styles.ratingContainer}>
-                    <MaterialCommunityIcons
-                      name="star"
-                      size={16}
-                      color="#FFD700"
-                    />
-                    <Text style={styles.barberRating}>
-                      {selectedBarber.rating}
-                    </Text>
+          {/* Services Selection */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="scissors-cutting" size={24} color="#FFD700" />
+              <Text style={styles.sectionTitle}>Select Services</Text>
+            </View>
+            
+            {serviceList.length > 0 ? (
+              serviceList.map(service => (
+                <TouchableOpacity
+                  key={service.id}
+                  style={[
+                    styles.serviceItem,
+                    selectedServices.includes(service.id) && styles.selectedService
+                  ]}
+                  onPress={() => handleServiceSelect(service.id)}
+                  activeOpacity={0.7}
+                >
+                  <View style={[
+                    styles.serviceCheckbox,
+                    selectedServices.includes(service.id) && styles.serviceCheckboxSelected
+                  ]}>
+                    {selectedServices.includes(service.id) && (
+                      <MaterialCommunityIcons name="check" size={16} color="#000" />
+                    )}
                   </View>
-                </View>
-                <Text style={styles.barberDescription}>
-                  {selectedBarber.description}
-                </Text>
-              </View>
+                  <Text style={styles.serviceName}>{service.name}</Text>
+                  <Text style={styles.servicePrice}>₹{service.price.toFixed(2)}</Text>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <Text style={styles.noServicesText}>No services available</Text>
             )}
           </View>
 
-          {/* Section: Services */}
+          {/* Time Period Selection */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons
-                name="scissors-cutting"
-                size={22}
-                color="#fff"
-              />
-              <Text style={styles.subtitle}>Select Services</Text>
+              <MaterialCommunityIcons name="clock-outline" size={24} color="#FFD700" />
+              <Text style={styles.sectionTitle}>Select Time Period</Text>
             </View>
-
-            <View style={styles.servicesList}>
-              {serviceList.length ? (
-                serviceList.map((service) => (
-                  <TouchableOpacity
-                    key={service.name}
-                    style={styles.serviceItem}
-                    onPress={() => handleServiceSelect(service.name)}
-                  >
-                    <View style={styles.serviceInfo}>
-                      <View
-                        style={[
-                          styles.checkbox,
-                          selectedServices.includes(service.name) &&
-                            styles.checked, // assuming `selectedServices` holds selected names
-                        ]}
-                      >
-                        {selectedServices.includes(service.name) && (
-                          <MaterialCommunityIcons
-                            name="check"
-                            size={16}
-                            color="#000"
-                          />
-                        )}
-                      </View>
-                      <Text style={styles.serviceText}>{service.name}</Text>
-                    </View>
-                    <Text style={styles.servicePrice}>₹{service.price}</Text>
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <Text style={styles.noservice}>No service Available</Text>
-              )}
+            
+            <View style={styles.timePeriodContainer}>
+              {['Morning', 'Afternoon', 'Evening', 'Night'].map((period) => (
+                <TouchableOpacity
+                  key={period}
+                  style={[
+                    styles.timePeriodButton,
+                    selectedTimePeriod === period && styles.selectedTimePeriod
+                  ]}
+                  onPress={() => setSelectedTimePeriod(period)}
+                >
+                  <Text style={[
+                    styles.timePeriodText,
+                    selectedTimePeriod === period && styles.selectedTimePeriodText
+                  ]}>
+                    {period}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
-          {/* Section: Time Slots */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={22}
-                color="#fff"
-              />
-              <Text style={styles.subtitle}>Choose Time Slot</Text>
-            </View>
+          {/* Selected Options Summary */}
+          <View style={styles.selectedOptionsSection}>
+            <Text style={styles.selectedOptionsTitle}>Your Selection</Text>
+            
+            {selectedDate && (
+              <View style={styles.selectedOption}>
+                <Text style={styles.selectedOptionLabel}>Date:</Text>
+                <Text style={styles.selectedOptionValue}>
+                  {formatDate(selectedDate)}
+                </Text>
+              </View>
+            )}
 
-            <TimeRangePicker
-              startHour={9}
-              endHour={18}
-              interval={15}
-              onRangeSelected={handleTimeRangeSelection}
-              alreadyBookedSlots={bookedTimeSlots}
-            />
-          </View>
+            {selectedBarber && (
+              <View style={styles.selectedOption}>
+                <Text style={styles.selectedOptionLabel}>Barber:</Text>
+                <Text style={styles.selectedOptionValue}>
+                  {selectedBarber.name}
+                </Text>
+              </View>
+            )}
 
-          {/* Section: Payment Summary */}
-          <View style={styles.summarySection}>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Total Amount</Text>
-              <Text style={styles.totalAmount}>
-                ₹{totalAmount + (advancePayment ? 20 : 0)}
+            {selectedServices.length > 0 && (
+              <View style={styles.selectedOption}>
+                <Text style={styles.selectedOptionLabel}>Services:</Text>
+                <View style={styles.selectedServicesList}>
+                  {selectedServices.map(serviceId => {
+                    const service = serviceList.find(s => s.id === serviceId);
+                    return (
+                      <Text key={serviceId} style={styles.selectedOptionValue}>
+                        • {service?.name} (₹{service?.price.toFixed(2)})
+                      </Text>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            {selectedTimePeriod && (
+              <View style={styles.selectedOption}>
+                <Text style={styles.selectedOptionLabel}>Time Period:</Text>
+                <Text style={styles.selectedOptionValue}>{selectedTimePeriod}</Text>
+              </View>
+            )}
+
+            <View style={styles.selectedOption}>
+              <Text style={styles.selectedOptionLabel}>Total:</Text>
+              <Text style={styles.selectedTotalValue}>
+                ₹{(totalAmount + (advancePayment ? 20 : 0)).toFixed(2)}
               </Text>
             </View>
-
-            {/* Payment Options */}
-            <View style={styles.paymentOptions}>
-              <View style={styles.advancePaymentRow}>
-                <Text style={styles.paymentText}>Advance Payment</Text>
-                <Text style={styles.advanceAmount}>₹20</Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={handlePaymentOptionChange}
-                style={[
-                  styles.paymentButton,
-                  advancePayment && styles.paidButton,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.paymentButtonText,
-                    advancePayment && styles.paidButtonText,
-                  ]}
-                >
-                  {advancePayment ? "Paid" : "Pay Now"}
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
 
-          {/* Confirm Button */}
-          <TouchableOpacity style={styles.confirmButton}>
-            <Text
-              style={styles.confirmButtonText}
-              onPress={handleConfirmBooking}
+          {/* Payment Summary */}
+          <View style={styles.summarySection}>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>₹{totalAmount.toFixed(2)}</Text>
+            </View>
+            
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Advance Payment</Text>
+              <Text style={styles.summaryValue}>₹{advancePayment ? "20.00" : "0.00"}</Text>
+            </View>
+            
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Amount</Text>
+              <Text style={styles.totalValue}>₹{(totalAmount + (advancePayment ? 20 : 0)).toFixed(2)}</Text>
+            </View>
+            
+            <TouchableOpacity
+              style={[
+                styles.paymentButton,
+                advancePayment && styles.paymentButtonActive
+              ]}
+              onPress={() => setAdvancePayment(!advancePayment)}
+              activeOpacity={0.7}
             >
-              Confirm Booking
-            </Text>
+              <Text style={styles.paymentButtonText}>
+                {advancePayment ? "Advance Paid (₹20)" : "Pay Advance (₹20)"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Confirm Booking Button */}
+          <TouchableOpacity 
+            style={[
+              styles.confirmButton,
+              (!selectedBarber || selectedServices.length === 0 || !selectedDate || !selectedTimePeriod) && 
+                styles.confirmButtonDisabled
+            ]}
+            onPress={handleConfirmBooking}
+            disabled={!selectedBarber || selectedServices.length === 0 || !selectedDate || !selectedTimePeriod}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.confirmButtonText}>Confirm Booking</Text>
           </TouchableOpacity>
         </ScrollView>
       </Animated.View>
@@ -401,268 +446,256 @@ export default function BookNow() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: '#FFF',
+    marginTop: 16,
+    fontSize: 16,
   },
   content: {
     flex: 1,
-    width: "100%",
-    paddingHorizontal: 16,
+    padding: 16,
   },
-  scrollViewContent: {
-    paddingBottom: 40,
+  scrollContent: {
+    paddingBottom: 32,
   },
   header: {
-    paddingTop: 24,
-    paddingBottom: 8,
-    alignItems: "center",
+    alignItems: 'center',
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
-    color: "#fff",
-    fontWeight: "bold",
-    letterSpacing: 0.5,
-    marginTop: 20,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    marginBottom: 8,
   },
   divider: {
     width: 60,
     height: 3,
-    backgroundColor: "#fff",
-    marginTop: 8,
-    borderRadius: 2,
-  },
-  imageContainer: {
-    position: "relative",
-    width: "100%",
-    height: 180,
-    borderRadius: 12,
-    overflow: "hidden",
-    marginVertical: 16,
-  },
-  shopImage: {
-    width: "100%",
-    height: "100%",
-  },
-  imageOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.2)",
+    backgroundColor: '#FFD700',
+    borderRadius: 3,
   },
   section: {
-    marginVertical: 16,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  subtitle: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "600",
-    marginLeft: 8,
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: "red",
-    borderRadius: 8,
-    backgroundColor: "black",
-    marginBottom: 12,
-  },
-  picker: {
-    width: "100%",
-    color: "#fff",
-    height: 50,
-  },
-  barberCard: {
-    backgroundColor: "rgba(255,255,255,0.05)",
+    marginBottom: 24,
+    backgroundColor: '#1E1E1E',
     borderRadius: 12,
     padding: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#FFF',
+    marginLeft: 12,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 8,
+    padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: '#3A3A3A',
   },
-  barberHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
+  datePickerText: {
+    fontSize: 16,
+    color: '#FFF',
   },
-  barberName: {
-    fontSize: 18,
-    color: "#fff",
-    fontWeight: "600",
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,215,0,0.2)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  barberRating: {
-    fontSize: 14,
-    color: "#FFD700",
-    fontWeight: "bold",
-    marginLeft: 4,
-  },
-  barberDescription: {
-    fontSize: 14,
-    color: "#ccc",
-    lineHeight: 20,
-  },
-  servicesList: {
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "rgba(255,255,255,0.05)",
+  pickerContainer: {
+    backgroundColor: '#2A2A2A',
+    borderRadius: 8,
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
+    borderColor: '#FFD700',
+    height: 180,
+  },
+  picker: {
+    color: '#FFF',
+    height: '100%',
   },
   serviceItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.1)",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2A2A2A',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
   },
-  serviceInfo: {
-    flexDirection: "row",
-    alignItems: "center",
+  selectedService: {
+    backgroundColor: '#3A3A3A',
+    borderWidth: 1,
+    borderColor: '#FFD700',
   },
-  checkbox: {
-    width: 22,
-    height: 22,
+  serviceCheckbox: {
+    width: 20,
+    height: 20,
     borderRadius: 4,
-    borderWidth: 2,
-    borderColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    backgroundColor: 'transparent',
   },
-  checked: {
-    backgroundColor: "#fff",
-    borderColor: "#fff",
+  serviceCheckboxSelected: {
+    backgroundColor: '#FFD700',
   },
-  serviceText: {
+  serviceName: {
+    flex: 1,
     fontSize: 16,
-    color: "#fff",
+    color: '#FFF',
   },
   servicePrice: {
     fontSize: 16,
-    color: "#fff",
-    fontWeight: "600",
+    fontWeight: '600',
+    color: '#FFD700',
   },
-  timeSlotContainer: {
-    marginTop: 8,
+  noServicesText: {
+    color: '#AAA',
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 16,
+  },
+  timePeriodContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  timePeriodButton: {
+    width: '48%',
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 8,
+    backgroundColor: '#2A2A2A',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#3A3A3A',
+  },
+  selectedTimePeriod: {
+    backgroundColor: '#4A3A00',
+    borderColor: '#FFD700',
+  },
+  timePeriodText: {
+    fontSize: 16,
+    color: '#FFF',
+  },
+  selectedTimePeriodText: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+  },
+  selectedOptionsSection: {
+    backgroundColor: '#2A2A2A',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  selectedOptionsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#3A3A3A',
     paddingBottom: 8,
   },
-  timeSlot: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  bookedTimeSlot: {
-    backgroundColor: "rgba(120,120,120,0.2)",
-    borderColor: "rgba(120,120,120,0.3)",
-  },
-  selectedTimeSlot: {
-    backgroundColor: "#fff",
-    borderColor: "#fff",
-  },
-  timeSlotText: {
-    color: "#fff",
-    fontWeight: "500",
-  },
-  bookedText: {
-    color: "#888",
-  },
-  selectedTimeText: {
-    color: "#000",
-    fontWeight: "600",
-  },
-  summarySection: {
-    marginTop: 24,
-    padding: 16,
-    backgroundColor: "rgba(255,255,255,0.05)",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.1)",
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.1)",
-  },
-  totalLabel: {
-    fontSize: 16,
-    color: "#ccc",
-  },
-  totalAmount: {
-    fontSize: 20,
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  paymentOptions: {
-    marginTop: 16,
-  },
-  advancePaymentRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  selectedOption: {
     marginBottom: 12,
   },
-  paymentText: {
-    fontSize: 15,
-    color: "#ccc",
+  selectedOptionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFD700',
+    marginBottom: 4,
   },
-  advanceAmount: {
-    fontSize: 15,
-    color: "#fff",
+  selectedOptionValue: {
+    fontSize: 14,
+    color: '#FFF',
+    marginLeft: 8,
+  },
+  selectedServicesList: {
+    marginLeft: 8,
+  },
+  selectedTotalValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    marginLeft: 8,
+  },
+  summarySection: {
+    backgroundColor: '#2A2A2A',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    color: '#AAA',
+  },
+  summaryValue: {
+    fontSize: 16,
+    color: '#FFF',
+  },
+  totalRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#3A3A3A',
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFF',
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFD700',
   },
   paymentButton: {
-    backgroundColor: "rgba(255,255,255,0.8)",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    backgroundColor: '#3A3A3A',
     borderRadius: 8,
-    alignItems: "center",
+    padding: 16,
+    marginTop: 16,
+    alignItems: 'center',
+  },
+  paymentButtonActive: {
+    backgroundColor: '#4A3A00',
   },
   paymentButtonText: {
-    color: "#000",
-    fontWeight: "600",
     fontSize: 16,
-  },
-  paidButton: {
-    backgroundColor: "#1A1A1A",
-    borderWidth: 1,
-    borderColor: "#fff",
-  },
-  paidButtonText: {
-    color: "#fff",
+    fontWeight: '600',
+    color: '#FFD700',
   },
   confirmButton: {
-    backgroundColor: "#fff",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 32,
-    marginBottom: 24,
+    backgroundColor: '#FFD700',
+    borderRadius: 8,
+    padding: 18,
+    alignItems: 'center',
+  },
+  confirmButtonDisabled: {
+    backgroundColor: '#666',
   },
   confirmButtonText: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#000",
-  },
-  noservice: {
-    color: "white",
-    fontSize: 15,
-    marginLeft: 10,
+    fontWeight: 'bold',
+    color: '#000',
   },
 });

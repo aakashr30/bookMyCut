@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     try {
       const response = await axios.post(endpoint, { email, password });
+      console.log(response.data.result, "response after login");
       const token = response?.data.result.token;
       const data = response?.data?.result?.userData;
       console.log(token, "tokn after logiin");

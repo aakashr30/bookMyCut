@@ -1,152 +1,3 @@
-// import React from "react";
-// import {
-//   View,
-//   Text,
-//   StyleSheet,
-//   FlatList,
-//   Image,
-//   TouchableOpacity,
-// } from "react-native";
-
-// const popularShops = [
-//   {
-//     id: "1",
-//     name: "Shop One",
-//     image:
-//       "https://content.jdmagicbox.com/comp/kottayam/e7/9999px481.x481.140129041134.z7e7/catalogue/dronas-hair-style-kottayam-esi3d.jpg",
-//     rating: 4.5,
-//   },
-//   {
-//     id: "2",
-//     name: "Shop Two",
-//     image:
-//       "https://content.jdmagicbox.com/comp/ernakulam/r8/0484px484.x484.230605112159.t8r8/catalogue/us7kpit7xgtcni9-js73d0rgui.jpg",
-//     rating: 4.0,
-//   },
-//   {
-//     id: "3",
-//     name: "Shop Three",
-//     image:
-//       "https://content.jdmagicbox.com/comp/ernakulam/r8/0484px484.x484.230605112159.t8r8/catalogue/us7kpit7xgtcni9-js73d0rgui.jpg",
-//     rating: 5.0,
-//   },
-//   {
-//     id: "4",
-//     name: "Shop Four",
-//     image:
-//       "https://content.jdmagicbox.com/comp/ernakulam/r8/0484px484.x484.230605112159.t8r8/catalogue/us7kpit7xgtcni9-js73d0rgui.jpg",
-//     rating: 3.5,
-//   },
-//   {
-//     id: "5",
-//     name: "Shop Five",
-//     image:
-//       "https://content.jdmagicbox.com/comp/ernakulam/r8/0484px484.x484.230605112159.t8r8/catalogue/us7kpit7xgtcni9-js73d0rgui.jpg",
-//     rating: 4.2,
-//   },
-// ];
-
-// export default function Popular() {
-//   const renderShopCard = ({ item }) => {
-//     return (
-//       <View style={styles.card}>
-//         <Image
-//           source={{ uri: item.image }} // Use uri for remote images
-//           style={styles.shopImage}
-//           resizeMode="cover" // Ensure the image fills the container without distortion
-//         />
-//         <View style={styles.overlay} />
-//         <Text style={styles.shopName}>{item.name}</Text>
-//         <View style={styles.ratingContainer}>
-//           <Text style={styles.rating}>⭐ {item.rating}</Text>
-//         </View>
-//         <TouchableOpacity style={styles.bookButton}>
-//           <Text style={styles.bookButtonText}>Book Now</Text>
-//         </TouchableOpacity>
-//       </View>
-//     );
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Popular Shops</Text>
-//       <FlatList
-//         data={popularShops}
-//         horizontal
-//         renderItem={renderShopCard}
-//         keyExtractor={(item) => item.id}
-//         showsHorizontalScrollIndicator={false}
-//       />
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     padding: 20,
-//   },
-//   title: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//     marginBottom: 10,
-//     color: "white",
-//   },
-//   card: {
-//     width: 220,
-//     marginRight: 15,
-//     backgroundColor: "white",
-//     borderRadius: 20, // Increased border radius for premium look
-//     elevation: 8, // Shadow for Android (increased for more depth)
-//     shadowColor: "#000", // Shadow for iOS
-//     shadowOffset: { width: 0, height: 4 },
-//     shadowOpacity: 0.3, // Increased shadow opacity for better effect
-//     shadowRadius: 10,
-//     overflow: "hidden",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     position: "relative",
-//   },
-//   shopImage: {
-//     width: "100%", // Full width of the card
-//     height: 150, // Fixed height for images
-//     borderTopLeftRadius: 20, // Rounded top corners for a smooth look
-//     borderTopRightRadius: 20,
-//   },
-//   overlay: {
-//     ...StyleSheet.absoluteFillObject, // Covers the entire card
-//     backgroundColor: "rgba(0, 0, 0, 0.3)", // Semi-transparent black overlay
-//     borderTopLeftRadius: 20,
-//     borderTopRightRadius: 20,
-//   },
-//   shopName: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     color: "#fff", // White text for premium appearance
-//     marginTop: 10,
-//     textAlign: "center",
-//     paddingHorizontal: 10,
-//   },
-//   ratingContainer: {
-//     marginVertical: 5,
-//   },
-//   rating: {
-//     fontSize: 16,
-//     color: "#f1c40f", // Gold color for the rating
-//     textAlign: "center",
-//   },
-//   bookButton: {
-//     backgroundColor: "#000",
-//     paddingVertical: 10,
-//     paddingHorizontal: 30,
-//     borderRadius: 10, // Rounded button for a more premium look
-//     marginBottom: 10,
-//   },
-//   bookButtonText: {
-//     color: "#fff",
-//     fontWeight: "bold",
-//     fontSize: 16,
-//   },
-// });
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -156,13 +7,19 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
+  Animated,
 } from "react-native";
 import { fetchViewAllShop } from "@/app/api/shopOwnerApi/shopOnwer";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+
+const { width } = Dimensions.get("window");
 
 export default function Popular() {
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [animatedValue] = useState(new Animated.Value(0));
 
   useEffect(() => {
     const loadShops = async () => {
@@ -172,8 +29,15 @@ export default function Popular() {
         if (response?.success && Array.isArray(response.data)) {
           // Filter only shop entries (entries that contain "ShopName")
           const shopData = response.data.filter((item) => item.ShopName);
-          console.log(shopData, "shopDatashopData");
+          console.log(shopData, "shopDatashopData...");
           setShops(shopData);
+          
+          // Animate in the content
+          Animated.timing(animatedValue, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }).start();
         } else {
           console.error("Invalid data format:", response);
         }
@@ -187,46 +51,181 @@ export default function Popular() {
     loadShops();
   }, []);
 
-  const renderShopCard = ({ item }) => (
-    <View style={styles.card}>
-      {item.image ? (
-        <Image
-          source={{ uri: item.image }}
-          style={styles.shopImage}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.shopImage, styles.placeholderImage]}>
-          <Text style={styles.placeholderText}>No Image</Text>
-        </View>
-      )}
-      <View style={styles.overlay} />
-      <Text style={styles.shopName}>{item.ShopName}</Text>
-      <View style={styles.ratingContainer}>
-        <Text style={styles.rating}>⭐ {item.rating || "4.0"}</Text>
-      </View>
-      <TouchableOpacity
-        style={styles.bookButton}
-        onPress={() => router.push("/screens/users/userBooking")}
+  const ShopCard = ({ item, index }) => {
+    const [cardAnimation] = useState(new Animated.Value(0));
+    const [pressed, setPressed] = useState(false);
+
+    useEffect(() => {
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 600,
+        delay: index * 100,
+        useNativeDriver: true,
+      }).start();
+    }, []);
+
+    const onPressIn = () => {
+      setPressed(true);
+      Animated.timing(cardAnimation, {
+        toValue: 0.95,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    const onPressOut = () => {
+      setPressed(false);
+      Animated.timing(cardAnimation, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    return (
+      <Animated.View
+        style={[
+          styles.cardContainer,
+          {
+            opacity: cardAnimation,
+            transform: [
+              {
+                translateY: cardAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [50, 0],
+                }),
+              },
+              {
+                scale: cardAnimation,
+              },
+            ],
+          },
+        ]}
       >
-        <Text style={styles.bookButtonText}>Book Now</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.card}
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
+          onPress={() => router.push("/screens/users/userBooking")}
+          activeOpacity={0.9}
+        >
+          {/* Image Section */}
+          <View style={styles.imageContainer}>
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={styles.shopImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={[styles.shopImage, styles.placeholderImage]}>
+                <View style={styles.placeholderIcon}>
+                  <Text style={styles.placeholderIconText}>🏪</Text>
+                </View>
+                <Text style={styles.placeholderText}>No Image Available</Text>
+              </View>
+            )}
+            
+            {/* Gradient Overlay */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.7)']}
+              style={styles.gradientOverlay}
+            />
+            
+            {/* Rating Badge */}
+            <View style={styles.ratingBadge}>
+              <Text style={styles.ratingText}>⭐ {item.rating || "4.0"}</Text>
+            </View>
+          </View>
+
+          {/* Content Section */}
+          <View style={styles.cardContent}>
+            <Text style={styles.shopName} numberOfLines={2}>
+              {item.ShopName}
+            </Text>
+            
+            {/* Additional Info */}
+            <View style={styles.infoContainer}>
+              <View style={styles.infoItem}>
+                <Text style={styles.infoIcon}>📍</Text>
+                <Text style={styles.infoText}>
+                  {item.location || "Location not specified"}
+                </Text>
+              </View>
+              
+              <View style={styles.infoItem}>
+                <Text style={styles.infoIcon}>⏰</Text>
+                <Text style={styles.infoText}>
+                  {item.timing || "Open Now"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Book Button */}
+            <TouchableOpacity style={styles.bookButton}>
+              <LinearGradient
+                colors={['#1a1a1a', '#333333', '#000000']}
+                style={styles.bookButtonGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.bookButtonText}>Book Now</Text>
+                <Text style={styles.bookButtonIcon}>→</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  const renderShopCard = ({ item, index }) => (
+    <ShopCard item={item} index={index} />
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Popular Shops</Text>
+      {/* Header Section */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Popular Shops</Text>
+        <Text style={styles.subtitle}>Discover the best shops near you</Text>
+      </View>
+
+      {/* Loading State */}
       {loading ? (
-        <ActivityIndicator size="large" color="#fff" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>Loading amazing shops...</Text>
+        </View>
       ) : (
-        <FlatList
-          data={shops}
-          horizontal
-          renderItem={renderShopCard}
-          keyExtractor={(item) => item._id}
-          showsHorizontalScrollIndicator={false}
-        />
+        <Animated.View
+          style={[
+            styles.listContainer,
+            {
+              opacity: animatedValue,
+              transform: [
+                {
+                  translateY: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          <FlatList
+            data={shops}
+            horizontal
+            renderItem={renderShopCard}
+            keyExtractor={(item) => item._id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.listContent}
+            snapToInterval={width * 0.8}
+            decelerationRate="fast"
+            snapToAlignment="center"
+          />
+        </Animated.View>
       )}
     </View>
   );
@@ -234,76 +233,173 @@ export default function Popular() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    paddingVertical: 20,
+    backgroundColor: 'transparent',
+  },
+  header: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 10,
-    color: "white",
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#ffffff',
+    marginBottom: 5,
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#ffffff80',
+    fontWeight: '400',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 15,
+    fontSize: 16,
+    color: '#ffffff80',
+    fontWeight: '500',
+  },
+  listContainer: {
+    flex: 1,
+  },
+  listContent: {
+    paddingHorizontal: 20,
+  },
+  cardContainer: {
+    width: width * 0.75,
+    marginRight: 15,
   },
   card: {
-    width: 220,
-    marginRight: 15,
-    backgroundColor: "white",
-    borderRadius: 20,
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    backgroundColor: '#1a1a1a',
+    borderRadius: 24,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  imageContainer: {
+    position: 'relative',
+    height: 200,
   },
   shopImage: {
-    width: "100%",
-    height: 150,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    width: '100%',
+    height: '100%',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
   },
   placeholderImage: {
-    backgroundColor: "#ccc",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#2a2a2a',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  placeholderText: {
-    fontSize: 16,
-    color: "#555",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  shopName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "black",
-    marginTop: 10,
-    textAlign: "center",
-    paddingHorizontal: 10,
-  },
-  ratingContainer: {
-    marginVertical: 5,
-  },
-  rating: {
-    fontSize: 16,
-    color: "#f1c40f",
-    textAlign: "center",
-  },
-  bookButton: {
-    backgroundColor: "#000",
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
+  placeholderIcon: {
+    backgroundColor: '#333333',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
   },
-  bookButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+  placeholderIconText: {
+    fontSize: 24,
+  },
+  placeholderText: {
+    fontSize: 14,
+    color: '#888888',
+    fontWeight: '500',
+  },
+  gradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+  },
+  ratingBadge: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    backgroundColor: 'rgba(26, 26, 26, 0.95)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backdropFilter: 'blur(10px)',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#ffffff',
+  },
+  cardContent: {
+    padding: 20,
+  },
+  shopName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 12,
+    lineHeight: 28,
+  },
+  infoContainer: {
+    marginBottom: 20,
+  },
+  infoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoIcon: {
     fontSize: 16,
+    marginRight: 8,
+    width: 20,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#aaaaaa',
+    fontWeight: '500',
+    flex: 1,
+  },
+  bookButton: {
+    borderRadius: 16,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+  },
+  bookButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+  },
+  bookButtonText: {
+    color: '#ffffff',
+    fontWeight: '700',
+    fontSize: 16,
+    marginRight: 8,
+  },
+  bookButtonIcon: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

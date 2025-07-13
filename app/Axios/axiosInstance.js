@@ -2,7 +2,9 @@ import axios from "axios";
 
 // Create an Axios instance
 const Axios = axios.create({
-  baseURL: "https://bookmycuts.onrender.com/api",
+  // http://localhost:3002
+  // baseURL: "https://bookmycuts.onrender.com/api",
+  baseURL: "http://localhost:3002/api",
   headers: {
     "Content-Type": "application/json",
   },
