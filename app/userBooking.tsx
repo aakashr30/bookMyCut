@@ -21,7 +21,9 @@ import {
 } from "@/app/api/shopOwnerApi/shopOnwer";
 import { AuthContext } from "@/app/context/AuthContext";
 import { useLocalSearchParams, useNavigation } from "expo-router";
-import { bookNowApi } from "../../api/userApi/userApi";
+// import { bookNowApi } from "../../api/userApi/userApi";
+
+import { bookNowApi } from "./api/userApi/userApi";
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Ignore specific warnings

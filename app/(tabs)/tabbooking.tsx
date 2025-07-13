@@ -107,16 +107,10 @@ const BookNow = () => {
     alert(`Payment of $${totalAmount} has been processed for your booking.`);
   };
 
-  const navigateToBooking = (shopId) => {
-    console.log("Navigating to booking for shop ID:", shopId);
-    router.push({
-      pathname: "/screens/users/userBooking",
-      params: { 
-        shopId: shopId,
-        // You can pass additional parameters if needed
-      }
-    });
-  };
+ const navigateToBooking = (shopId) => {
+  console.log("Navigating to booking for shop ID:", shopId);
+   router.push(`/Search/${shopId}`)
+};
 
   if (loading) {
     return (
