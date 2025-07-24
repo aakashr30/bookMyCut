@@ -14,7 +14,7 @@ import { Picker } from "@react-native-picker/picker";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
-import { fetchViewAllShop } from '../api/shopOwnerApi/shopOnwer';
+import { fetchViewAllShop } from "../api/shopOwnerApi/shopOnwer";
 
 const BookNow = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -29,9 +29,9 @@ const BookNow = () => {
   const [salons, setSalons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const navigation = useNavigation();
-  
+
   useEffect(() => {
     navigation.setOptions({ headerShown: false });
     fetchSalons();
@@ -43,36 +43,59 @@ const BookNow = () => {
       setError(null);
       const response = await fetchViewAllShop();
       console.log("API Response:", response);
-      
+
       if (response && response.data) {
-        const transformedSalons = response.data.map(shop => ({
-          id: shop.shopId || shop._id,
-          name: shop.ShopName || shop.firstName,
-          image: shop.shopImage || "https://media.allure.com/photos/5890d754a08420c838db65e1/master/pass/WesWall1Edit.jpg",
-          rating: shop.rating || 4.0,
-          bookings: shop.bookingsCount || 0,
-          gender: shop.genderPreference || "Unisex",
-          openingTime: shop.Timing || "9:00 AM",
-          closingTime: shop.closingTime || "9:00 PM",
-          barbers: shop.barbers || ["John", "Alice"],
-          price: shop.price || 50,
-          services: shop.services || [],
-          location: shop.City || "Unknown location"
-        }));
+        console.log(response, "response");
+        const transformedSalons = response.data.map(
+          (shop: {
+            _id: any;
+            ShopName: any;
+            firstName: any;
+            shopImage: any;
+            rating: any;
+            bookingsCount: any;
+            genderPreference: any;
+            Timing: any;
+            closingTime: any;
+            barbers: any;
+            price: any;
+            services: any;
+            City: any;
+          }) => ({
+            id: shop._id,
+            name: shop.ShopName || shop.firstName,
+            image:
+              shop.shopImage ||
+              "https://media.allure.com/photos/5890d754a08420c838db65e1/master/pass/WesWall1Edit.jpg",
+            rating: shop.rating || 4.0,
+            bookings: shop.bookingsCount || 0,
+            gender: shop.genderPreference || "Unisex",
+            openingTime: shop.Timing || "9:00 AM",
+            closingTime: shop.closingTime || "9:00 PM",
+            barbers: shop.barbers || ["John", "Alice"],
+            price: shop.price || 50,
+            services: shop.services || [],
+            location: shop.City || "Unknown location",
+          })
+        );
         setSalons(transformedSalons);
       } else {
         setError("No salons data received from server");
       }
     } catch (err) {
       console.error("Error fetching salons:", err);
-      setError("Failed to load salons. Please check your connection and try again.");
+      setError(
+        "Failed to load salons. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const filteredSalons = salons
-    .filter((salon) => selectedGender === "All" || salon.gender === selectedGender)
+    .filter(
+      (salon) => selectedGender === "All" || salon.gender === selectedGender
+    )
     .sort((a, b) => {
       if (selectedSort === "Rating") return b.rating - a.rating;
       if (selectedSort === "Bookings") return b.bookings - a.bookings;
@@ -106,11 +129,10 @@ const BookNow = () => {
   const handlePayment = () => {
     alert(`Payment of $${totalAmount} has been processed for your booking.`);
   };
-
- const navigateToBooking = (shopId) => {
-  console.log("Navigating to booking for shop ID:", shopId);
-   router.push(`/Search/${shopId}`)
-};
+  const navigateToBooking = (id) => {
+    router.push(`/Search/${id}`);
+    // router.push(`/screens/users/userBooking/${id}`);
+  };
 
   if (loading) {
     return (
@@ -125,10 +147,7 @@ const BookNow = () => {
     return (
       <View style={[styles.container, styles.errorContainer]}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton} 
-          onPress={fetchSalons}
-        >
+        <TouchableOpacity style={styles.retryButton} onPress={fetchSalons}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
@@ -198,17 +217,24 @@ const BookNow = () => {
           filteredSalons.map((salon) => (
             <View key={salon.id} style={styles.card}>
               <View style={styles.cardLeft}>
-                <Image source={{ uri: salon.image }} style={styles.salonImage} />
+                <Image
+                  source={{ uri: salon.image }}
+                  style={styles.salonImage}
+                />
               </View>
               <View style={styles.cardRight}>
                 <Text style={styles.salonName}>{salon.name}</Text>
-                <Text style={styles.salonDetails}>Rating: {salon.rating} ⭐</Text>
+                <Text style={styles.salonDetails}>
+                  Rating: {salon.rating} ⭐
+                </Text>
                 <Text style={styles.salonDetails}>Price: ${salon.price}</Text>
                 <Text style={styles.salonDetails}>
                   Open: {salon.openingTime} - {salon.closingTime}
                 </Text>
                 <Text style={styles.salonDetails}>Gender: {salon.gender}</Text>
-                <Text style={styles.salonDetails}>Location: {salon.location}</Text>
+                <Text style={styles.salonDetails}>
+                  Location: {salon.location}
+                </Text>
                 <TouchableOpacity
                   style={styles.bookButton}
                   onPress={() => navigateToBooking(salon.id)}
@@ -219,7 +245,9 @@ const BookNow = () => {
             </View>
           ))
         ) : (
-          <Text style={styles.noSalonsText}>No salons found matching your criteria</Text>
+          <Text style={styles.noSalonsText}>
+            No salons found matching your criteria
+          </Text>
         )}
       </ScrollView>
 
@@ -244,40 +272,40 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
-    color: 'white',
+    color: "white",
     marginTop: 10,
     fontSize: 16,
   },
   errorContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: 'gold',
+    backgroundColor: "gold",
     padding: 12,
     borderRadius: 5,
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   retryButtonText: {
-    color: 'black',
-    fontWeight: 'bold',
+    color: "black",
+    fontWeight: "bold",
     fontSize: 16,
   },
   noSalonsText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
     marginTop: 40,
     fontSize: 16,
   },
@@ -353,7 +381,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 15,
     marginTop: 10,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   bookButtonText: {
     color: "black",
@@ -376,7 +404,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });
 

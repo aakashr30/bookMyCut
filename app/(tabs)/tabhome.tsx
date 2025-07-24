@@ -11,9 +11,9 @@ import {
 } from "react-native";
 import Navbar from "../Components/Navbar/userNavbar";
 import Banner from "../Components/Banner/Banner";
-import Cards from "../Components/cards/Cards";
+import Cards from "../Components/Cards/Cards";
 import Popular from "../Components/Popular/Popular";
-import AuthContext from "../context/AuthContext";
+// import AuthContext from "../context/AuthContext";
 const BookNow = () => {
   // const {token} = useContext(AuthContext);
 

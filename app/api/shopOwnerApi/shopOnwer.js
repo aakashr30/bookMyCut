@@ -1,13 +1,19 @@
 import { jwtDecode } from "jwt-decode";
 import Axios from "../../Axios/axiosInstance"; // Import the Axios instance
 import Toast from "react-native-toast-message";
+import { useLocalSearchParams } from "expo-router";
 
-export const fetchViewSingleShopBarber = async (userToken: string, shopId: string) => {
+const { shopId } = useLocalSearchParams();
+
+export const fetchViewSingleShopBarber = async (
+  userToken: string,
+  shopId: string
+) => {
   try {
     if (!userToken) {
       throw new Error("Authentication token is required");
     }
-    
+
     if (!shopId) {
       throw new Error("Shop ID is required");
     }
@@ -20,10 +26,9 @@ export const fetchViewSingleShopBarber = async (userToken: string, shopId: strin
     });
     console.log("barber-------------:", response);
     return response.data;
-
   } catch (error) {
     console.error("Error fetching barbers:", error?.response?.data || error);
-    
+
     NotificationManager.show({
       message: error?.response?.data?.message || "Failed to fetch barbers",
       type: NotificationType.ERROR,
@@ -31,7 +36,9 @@ export const fetchViewSingleShopBarber = async (userToken: string, shopId: strin
 
     return {
       success: false,
-      message: error?.response?.data?.message || "Something went wrong while fetching barbers",
+      message:
+        error?.response?.data?.message ||
+        "Something went wrong while fetching barbers",
       error: error?.response?.data || error,
     };
   }
@@ -127,9 +134,10 @@ export const fetchAddShop = async (requestData, token) => {
 // };
 
 // Fetch single shop details
-export const fetchMyShop = async (id) => {
+export const fetchMyShop = async (shopId) => {
   try {
-    const response = await Axios.post("/shop/viewSigleShop", { id });
+    const response = await Axios.post("/shop/viewSigleShop", { shopId });
+    console.log(response, "response");
     return response.data;
   } catch (error) {
     console.error("Error fetching shop:", error);
@@ -179,7 +187,7 @@ export const fetchViewAllServices = async () => {
 // };
 
 // Fetch shop's services based on shop ID from JWT token
-export const fetchViewSingleService = async (userToken,Id) => {
+export const fetchViewSingleService = async (userToken, Id) => {
   try {
     if (!userToken) throw new Error("User token is missing.");
     console.log(userToken, "user token");
@@ -194,7 +202,7 @@ export const fetchViewSingleService = async (userToken,Id) => {
         "Content-Type": "application/json",
       },
     });
- 
+
     console.log(response, "---respose service");
 
     return response.data;
